@@ -585,19 +585,11 @@ function RecruitmentPage() {
               <div className="flex flex-col gap-0">
                 <Tabs defaultValue="postings" className="w-full flex flex-col">
                   <div className="border-b border-border/10 mb-0">
-                    <TabsList className="bg-transparent w-full justify-start rounded-none h-10 p-0 gap-6 border-0">
-                      <TabsTrigger
-                        value="postings"
-                        className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-full px-0 text-[10px] font-black uppercase tracking-widest text-muted-foreground/35 data-[state=active]:text-primary transition-colors"
-                      >
+                    <TabsList>
+                      <TabsTrigger value="postings">
                         Active Pipelines
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="talent"
-                        className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-full px-0 text-[10px] font-black uppercase tracking-widest text-muted-foreground/35 data-[state=active]:text-primary transition-colors"
-                      >
-                        Talent Pool
-                      </TabsTrigger>
+                      <TabsTrigger value="talent">Talent Pool</TabsTrigger>
                     </TabsList>
                   </div>
 

@@ -8,7 +8,6 @@ import {
   File02Icon,
   Mail01Icon,
   PassportIcon,
-  StarIcon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -297,21 +296,7 @@ function ApplicantReviewPage() {
               {/* Profile Card */}
               <Frame>
                 <FramePanel className="bg-card overflow-hidden p-0">
-                  <div className="h-20 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent relative">
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-background/90 backdrop-blur border border-border/20 rounded-lg px-2.5 py-1 shadow-sm">
-                      <HugeiconsIcon
-                        icon={StarIcon}
-                        size={11}
-                        className="text-amber-400"
-                      />
-                      <span className="text-[11px] font-black text-foreground/80">
-                        {(applicant.score || 0).toFixed(1)}
-                        <span className="text-muted-foreground/40 font-medium text-[10px]">
-                          /10
-                        </span>
-                      </span>
-                    </div>
-                  </div>
+                  <div className="h-20 bg-gradient-to-br from-primary/8 via-primary/4 to-transparent relative"></div>
                   <div className="px-5 pb-5 -mt-9">
                     <UserAvatar
                       src={applicant.image}
@@ -424,17 +409,13 @@ function ApplicantReviewPage() {
               <Tabs defaultValue="overview" className="w-full flex flex-col">
                 {/* Tab bar — visually separated from content */}
                 <div className="border-b border-border/10 mb-6">
-                  <TabsList className="bg-transparent w-full justify-start rounded-none h-10 p-0 gap-6 border-0">
+                  <TabsList>
                     {[
                       { value: "overview", label: "Overview" },
                       { value: "history", label: "History" },
                       { value: "documents", label: "Documents" },
                     ].map((tab) => (
-                      <TabsTrigger
-                        key={tab.value}
-                        value={tab.value}
-                        className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-full px-0 text-[10px] font-black uppercase tracking-widest text-muted-foreground/35 data-[state=active]:text-primary transition-colors"
-                      >
+                      <TabsTrigger key={tab.value} value={tab.value}>
                         {tab.label}
                       </TabsTrigger>
                     ))}
