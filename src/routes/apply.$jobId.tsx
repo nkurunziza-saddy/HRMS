@@ -93,7 +93,7 @@ function ApplyForJobPage() {
         data.append("gender", formData.gender);
         if (formData.coverLetter)
           data.append("coverLetter", formData.coverLetter);
-        data.append("resume", formData.resume);
+        data.append("cv", formData.resume);
 
         await createApplicant(data).unwrap();
       }
