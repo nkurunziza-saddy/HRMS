@@ -47,11 +47,11 @@ export const applicantApi = hrmsApi.injectEndpoints({
 			query: (companyId) => `/applicant/pipeline/${companyId}`,
 			providesTags: [{ type: "Applicant", id: "PIPELINE" }],
 		}),
-		createApplicant: builder.mutation<Applicant, CreateApplicantRequest>({
-			query: (data) => ({
+		createApplicant: builder.mutation<Applicant, FormData>({
+			query: (formData) => ({
 				url: "/applicant",
 				method: "POST",
-				body: data,
+				body: formData,
 			}),
 			invalidatesTags: (result) => [
 				{ type: "Applicant" as const, id: "LIST" },

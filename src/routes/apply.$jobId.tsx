@@ -74,23 +74,32 @@ function ApplyForJobPage() {
 			return;
 		}
 
+		if (!formData.resume) {
+			toast.error("Please upload your Resume / CV");
+			return;
+		}
+
 		setIsSubmitting(true);
 		try {
 			if (job) {
-				await createApplicant({
-					firstName: formData.firstName,
-					lastName: formData.lastName,
-					email: formData.email,
-					phoneNumber: formData.phone,
-					jobPostId: jobId,
-					documentNumber: formData.documentNumber,
-					gender: formData.gender,
-				}).unwrap();
+				const data = new FormData();
+				data.append("firstName", formData.firstName);
+				data.append("lastName", formData.lastName);
+				data.append("email", formData.email);
+				data.append("phoneNumber", formData.phone);
+				data.append("jobPostId", jobId);
+				data.append("documentNumber", formData.documentNumber);
+				data.append("gender", formData.gender);
+				if (formData.coverLetter) data.append("coverLetter", formData.coverLetter);
+				data.append("resume", formData.resume);
+
+				await createApplicant(data).unwrap();
 			}
 			setIsSuccess(true);
 			toast.success("Application submitted successfully!");
-		} catch (_err) {
-			toast.error("Failed to submit application");
+		} catch (err: any) {
+			console.error(err);
+			toast.error(err?.data?.message || "Failed to submit application");
 		} finally {
 			setIsSubmitting(false);
 		}
