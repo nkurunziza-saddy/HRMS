@@ -3,6 +3,7 @@
 import { Alert02Icon, CheckListIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,19 +14,34 @@ import {
 	FramePanel,
 	FrameTitle,
 } from "@/components/ui/frame";
-import { api } from "@/lib/mock-api";
-import type { PolicyCompliance } from "@/types";
+import { useGetComplianceQuery } from "@/lib/redux/api/employee";
+import type { RootState } from "@/lib/redux/store";
 
 export const PolicyComplianceCard = React.memo(function PolicyComplianceCard() {
-	const [data, setData] = React.useState<PolicyCompliance | null>(null);
+	const activeCompanyId = useSelector(
+		(state: RootState) => state.auth.activeCompanyId,
+	);
+	const { data, isLoading } = useGetComplianceQuery(activeCompanyId || "", {
+		skip: !activeCompanyId,
+	});
 
-	React.useEffect(() => {
-		async function loadData() {
-			const res = await api.getPolicyCompliance();
-			setData(res);
-		}
-		loadData();
-	}, []);
+	if (isLoading) {
+		return (
+			<Frame className="h-full group/frame">
+				<FramePanel className="flex flex-col h-full overflow-hidden">
+					<FrameHeader>
+						<div>
+							<FrameTitle>Document Compliance</FrameTitle>
+							<FrameDescription>Loading compliance data...</FrameDescription>
+						</div>
+					</FrameHeader>
+					<FrameContent className="p-6 flex-1 flex items-center justify-center">
+						<div className="size-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+					</FrameContent>
+				</FramePanel>
+			</Frame>
+		);
+	}
 
 	if (!data) return null;
 
@@ -49,9 +65,11 @@ export const PolicyComplianceCard = React.memo(function PolicyComplianceCard() {
 					<div className="grid grid-cols-2 divide-x divide-border/5 border-b border-border/5">
 						<div className="p-6 flex flex-col gap-1 items-center justify-center text-center">
 							<span className="text-3xl font-light tabular-nums tracking-tighter text-foreground">
-								{Math.round(
-									(data.onboarding.compliant / data.onboarding.total) * 100,
-								)}
+								{data.onboarding.total > 0
+									? Math.round(
+											(data.onboarding.compliant / data.onboarding.total) * 100,
+										)
+									: 0}
 								%
 							</span>
 							<span className="text-xs font-bold text-muted-foreground/40 capitalize tracking-widest">
@@ -68,9 +86,12 @@ export const PolicyComplianceCard = React.memo(function PolicyComplianceCard() {
 						</div>
 						<div className="p-6 flex flex-col gap-1 items-center justify-center text-center">
 							<span className="text-3xl font-light tabular-nums tracking-tighter text-foreground">
-								{Math.round(
-									(data.offboarding.compliant / data.offboarding.total) * 100,
-								)}
+								{data.offboarding.total > 0
+									? Math.round(
+											(data.offboarding.compliant / data.offboarding.total) *
+												100,
+										)
+									: 0}
 								%
 							</span>
 							<span className="text-xs font-bold text-muted-foreground/40 capitalize tracking-widest">

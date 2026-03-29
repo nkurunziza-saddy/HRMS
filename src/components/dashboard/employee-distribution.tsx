@@ -105,7 +105,7 @@ export const EmployeeDistribution = React.memo(function EmployeeDistribution() {
 								paddingAngle={2}
 								className="outline-none"
 								style={{ cursor: "pointer" }}
-								onClick={(data) => {
+								onClick={(data: any) => {
 									if (data?.code) {
 										setSelected(data.code);
 									}

@@ -32,38 +32,60 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/lib/mock-api";
+import { useGetCompanyDepartmentsQuery } from "@/lib/redux/api/department";
+import { useOnboardEmployeeMutation } from "@/lib/redux/api/employee";
+import { useGetJobTitlesQuery } from "@/lib/redux/api/job-title";
+import { useAppSelector } from "@/lib/redux/store";
 import { cn } from "@/lib/utils";
 
+type OnboardSearch = {
+	applicantId?: string;
+	firstName?: string;
+	lastName?: string;
+	email?: string;
+	phone?: string;
+};
+
 export const Route = createFileRoute("/dashboard/employees/onboard")({
-	loader: async () => {
-		const [departments, jobTitles] = await Promise.all([
-			api.getDepartments(),
-			api.getJobTitles(),
-		]);
-		return { departments, jobTitles };
+	validateSearch: (search: Record<string, unknown>): OnboardSearch => {
+		return {
+			applicantId: search.applicantId as string,
+			firstName: search.firstName as string,
+			lastName: search.lastName as string,
+			email: search.email as string,
+			phone: search.phone as string,
+		};
 	},
-	pendingComponent: DashboardPending,
 	component: OnboardEmployeePage,
 });
 
 function OnboardEmployeePage() {
-	const { departments, jobTitles } = Route.useLoaderData();
+	const search = Route.useSearch();
 	const navigate = useNavigate();
+	const { activeCompanyId } = useAppSelector((state) => state.auth);
+
+	const { data: departmentsData, isLoading: isLoadingDepts } =
+		useGetCompanyDepartmentsQuery(
+			activeCompanyId ? { companyId: activeCompanyId } : undefined,
+		);
+	const { data: jobTitlesData, isLoading: isLoadingTitles } =
+		useGetJobTitlesQuery(undefined);
+	const [onboardEmployee] = useOnboardEmployeeMutation();
+
 	const [step, setStep] = useState(1);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
 
 	const [formData, setFormData] = useState({
-		firstName: "",
-		lastName: "",
+		firstName: search.firstName || "",
+		lastName: search.lastName || "",
 		idNumber: "",
-		phone: "",
-		email: "",
-		department: "",
-		position: "",
+		phone: search.phone || "",
+		email: search.email || "",
+		departmentId: "",
+		jobTitleId: "",
 		manager: "",
-		hireDate: "",
+		hireDate: new Date().toISOString().split("T")[0],
 		// files status
 		cv: false,
 		idCopy: false,
@@ -72,34 +94,37 @@ function OnboardEmployeePage() {
 		medicalReport: false,
 	});
 
+	const departments = departmentsData?.items || [];
+	const jobTitles = jobTitlesData?.items || [];
+
 	const handleSubmit = async () => {
+		if (!activeCompanyId) {
+			toast.error("No active company selected");
+			return;
+		}
+
 		setIsSubmitting(true);
 		try {
-			const deptName =
-				departments.find((d) => d.id === formData.department)?.name || "N/A";
-			const posName =
-				jobTitles.find((j) => j.id === formData.position)?.title || "N/A";
-
-			await api.addEmployee({
-				id: `EMP-${Math.floor(Math.random() * 1000)}`,
-				name: `${formData.firstName} ${formData.lastName}`,
+			await onboardEmployee({
 				firstName: formData.firstName,
 				lastName: formData.lastName,
 				idNumber: formData.idNumber,
 				email: formData.email,
 				phone: formData.phone,
-				department: deptName,
-				position: posName,
-				manager: formData.manager || "System Admin",
-				hireDate: formData.hireDate || new Date().toISOString().split("T")[0],
-				status: "probation",
-				complianceStatus: "compliant",
+				departmentId: formData.departmentId,
+				jobTitleId: formData.jobTitleId,
+				manager: formData.manager,
+				hireDate: formData.hireDate,
+				companyId: activeCompanyId,
+				status: "probation" as any,
+				complianceStatus: "compliant" as any,
 				onboardingProgress: 100,
-			});
+			}).unwrap();
 			setIsSuccess(true);
 			toast.success("Employee onboarded successfully");
-		} catch (_err) {
-			toast.error("Failed to complete onboarding");
+		} catch (err: any) {
+			console.error(err);
+			toast.error(err?.data?.message || "Failed to complete onboarding");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -123,6 +148,8 @@ function OnboardEmployeePage() {
 			))}
 		</div>
 	);
+
+	if (isLoadingDepts || isLoadingTitles) return <DashboardPending />;
 
 	if (isSuccess) {
 		return (
@@ -324,16 +351,16 @@ function OnboardEmployeePage() {
 													Department
 												</Label>
 												<Select
-													value={formData.department}
+													value={formData.departmentId}
 													onValueChange={(val) =>
-														setFormData({ ...formData, department: val || "" })
+														setFormData({ ...formData, departmentId: val || "" })
 													}
 												>
 													<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background">
 														<SelectValue placeholder="Select Department" />
 													</SelectTrigger>
 													<SelectContent>
-														{departments.map((d) => (
+														{departments.map((d: any) => (
 															<SelectItem key={d.id} value={d.id}>
 																{d.name}
 															</SelectItem>
@@ -349,9 +376,9 @@ function OnboardEmployeePage() {
 													Job Title
 												</Label>
 												<Select
-													value={formData.position}
+													value={formData.jobTitleId}
 													onValueChange={(val) =>
-														setFormData({ ...formData, position: val || "" })
+														setFormData({ ...formData, jobTitleId: val || "" })
 													}
 												>
 													<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background">
@@ -360,13 +387,13 @@ function OnboardEmployeePage() {
 													<SelectContent>
 														{jobTitles
 															.filter(
-																(j) =>
-																	!formData.department ||
-																	j.departmentId === formData.department,
+																(j: any) =>
+																	!formData.departmentId ||
+																	j.departmentId === formData.departmentId,
 															)
-															.map((j) => (
+															.map((j: any) => (
 																<SelectItem key={j.id} value={j.id}>
-																	{j.title}
+																	{j.name || j.title}
 																</SelectItem>
 															))}
 													</SelectContent>
@@ -504,7 +531,7 @@ function OnboardEmployeePage() {
 													!formData.lastName ||
 													!formData.email)) ||
 											(step === 2 &&
-												(!formData.department || !formData.position))
+												(!formData.departmentId || !formData.jobTitleId))
 										}
 									>
 										Next Stage

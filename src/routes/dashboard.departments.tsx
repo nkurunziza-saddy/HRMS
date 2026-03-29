@@ -13,8 +13,6 @@ import { useSelector } from "react-redux";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardPending } from "@/components/dashboard/dashboard-pending";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -26,6 +24,8 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -47,8 +47,8 @@ import {
 	Select,
 	SelectContent,
 	SelectItem,
-	SelectTrigger,
 	SelectSeparator,
+	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
 import {
@@ -155,14 +155,12 @@ function DepartmentsPage() {
 				description="Manage company structure and departmental divisions."
 			>
 				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-					<DialogTrigger
-						render={
-							<Button>
-								<HugeiconsIcon icon={PlusSignCircleIcon} />
-								Add Department
-							</Button>
-						}
-					/>
+					<DialogTrigger>
+						<Button>
+							<HugeiconsIcon icon={PlusSignCircleIcon} />
+							Add Department
+						</Button>
+					</DialogTrigger>
 					<DialogContent className="sm:max-w-[425px]">
 						<DialogHeader>
 							<DialogTitle>Add New Department</DialogTitle>
@@ -184,14 +182,11 @@ function DepartmentsPage() {
 								>
 									<SelectTrigger id="reference">
 										<SelectValue>
-											{(value: string | null) => {
-												if (!value)
-													return "Select a global department";
-												const ref = referencesData?.items.find(
-													(r) => r.id === value,
-												);
-												return ref?.name ?? value;
-											}}
+											{newDept.departmentReferenceId
+												? referencesData?.items.find(
+														(r) => r.id === newDept.departmentReferenceId,
+													)?.name || "Select a global department"
+												: "Select a global department"}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
@@ -220,17 +215,11 @@ function DepartmentsPage() {
 										open={isReferenceDialogOpen}
 										onOpenChange={setIsReferenceDialogOpen}
 									>
-										<AlertDialogTrigger
-											render={
-												<Button
-													variant="ghost"
-													size="sm"
-													className="px-2"
-												>
-													Create new
-												</Button>
-											}
-										/>
+										<AlertDialogTrigger>
+											<Button variant="ghost" size="sm" className="px-2">
+												Create new
+											</Button>
+										</AlertDialogTrigger>
 										<AlertDialogContent>
 											<AlertDialogHeader>
 												<AlertDialogTitle>
@@ -242,9 +231,7 @@ function DepartmentsPage() {
 												</AlertDialogDescription>
 											</AlertDialogHeader>
 											<div className="py-2 space-y-2">
-												<Label htmlFor="reference-name">
-													Reference Name
-												</Label>
+												<Label htmlFor="reference-name">Reference Name</Label>
 												<Input
 													id="reference-name"
 													value={referenceName}
@@ -257,8 +244,7 @@ function DepartmentsPage() {
 												<AlertDialogAction
 													onClick={handleCreateReference}
 													disabled={
-														isReferenceSubmitting ||
-														!referenceName.trim()
+														isReferenceSubmitting || !referenceName.trim()
 													}
 												>
 													{isReferenceSubmitting ? "Creating..." : "Create"}
@@ -347,20 +333,18 @@ function DepartmentsPage() {
 									</Badge>
 								</div>
 								<DropdownMenu>
-									<DropdownMenuTrigger
-										render={
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												className="opacity-0 group-hover:opacity-100 transition-opacity"
-											>
-												<HugeiconsIcon
-													icon={MoreHorizontalIcon}
-													className="size-4"
-												/>
-											</Button>
-										}
-									/>
+									<DropdownMenuTrigger>
+										<Button
+											variant="ghost"
+											size="icon-sm"
+											className="opacity-0 group-hover:opacity-100 transition-opacity"
+										>
+											<HugeiconsIcon
+												icon={MoreHorizontalIcon}
+												className="size-4"
+											/>
+										</Button>
+									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">
 										<DropdownMenuItem>
 											<HugeiconsIcon

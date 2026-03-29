@@ -46,6 +46,7 @@ import { Route as DashboardEmployeesOnboardRouteImport } from './routes/dashboar
 import { Route as DashboardEmployeesIdRouteImport } from './routes/dashboard.employees.$id'
 import { Route as AdminCompaniesRegisterRouteImport } from './routes/admin.companies.register'
 import { Route as AdminCompaniesIdRouteImport } from './routes/admin.companies.$id'
+import { Route as DashboardRecruitmentApplicantIdRouteImport } from './routes/dashboard.recruitment.applicant.$id'
 
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
@@ -235,6 +236,12 @@ const AdminCompaniesIdRoute = AdminCompaniesIdRouteImport.update({
   path: '/companies/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const DashboardRecruitmentApplicantIdRoute =
+  DashboardRecruitmentApplicantIdRouteImport.update({
+    id: '/recruitment/applicant/$id',
+    path: '/recruitment/applicant/$id',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/employees/': typeof DashboardEmployeesIndexRoute
   '/dashboard/payroll/': typeof DashboardPayrollIndexRoute
   '/dashboard/recruitment/': typeof DashboardRecruitmentIndexRoute
+  '/dashboard/recruitment/applicant/$id': typeof DashboardRecruitmentApplicantIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -311,6 +319,7 @@ export interface FileRoutesByTo {
   '/dashboard/employees': typeof DashboardEmployeesIndexRoute
   '/dashboard/payroll': typeof DashboardPayrollIndexRoute
   '/dashboard/recruitment': typeof DashboardRecruitmentIndexRoute
+  '/dashboard/recruitment/applicant/$id': typeof DashboardRecruitmentApplicantIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -351,6 +360,7 @@ export interface FileRoutesById {
   '/dashboard/employees/': typeof DashboardEmployeesIndexRoute
   '/dashboard/payroll/': typeof DashboardPayrollIndexRoute
   '/dashboard/recruitment/': typeof DashboardRecruitmentIndexRoute
+  '/dashboard/recruitment/applicant/$id': typeof DashboardRecruitmentApplicantIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/dashboard/employees/'
     | '/dashboard/payroll/'
     | '/dashboard/recruitment/'
+    | '/dashboard/recruitment/applicant/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/dashboard/employees'
     | '/dashboard/payroll'
     | '/dashboard/recruitment'
+    | '/dashboard/recruitment/applicant/$id'
   id:
     | '__root__'
     | '/'
@@ -468,6 +480,7 @@ export interface FileRouteTypes {
     | '/dashboard/employees/'
     | '/dashboard/payroll/'
     | '/dashboard/recruitment/'
+    | '/dashboard/recruitment/applicant/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -740,6 +753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCompaniesIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/dashboard/recruitment/applicant/$id': {
+      id: '/dashboard/recruitment/applicant/$id'
+      path: '/recruitment/applicant/$id'
+      fullPath: '/dashboard/recruitment/applicant/$id'
+      preLoaderRoute: typeof DashboardRecruitmentApplicantIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
@@ -803,6 +823,7 @@ interface DashboardRouteChildren {
   DashboardEmployeesIndexRoute: typeof DashboardEmployeesIndexRoute
   DashboardPayrollIndexRoute: typeof DashboardPayrollIndexRoute
   DashboardRecruitmentIndexRoute: typeof DashboardRecruitmentIndexRoute
+  DashboardRecruitmentApplicantIdRoute: typeof DashboardRecruitmentApplicantIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -825,6 +846,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardEmployeesIndexRoute: DashboardEmployeesIndexRoute,
   DashboardPayrollIndexRoute: DashboardPayrollIndexRoute,
   DashboardRecruitmentIndexRoute: DashboardRecruitmentIndexRoute,
+  DashboardRecruitmentApplicantIdRoute: DashboardRecruitmentApplicantIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(

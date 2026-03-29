@@ -1,6 +1,6 @@
 import type {
-	ApiPaginatedResponse,
 	Applicant,
+	ApplicantPipelineStage,
 	ChangeApplicantStatusRequest,
 	CreateApplicantRequest,
 } from "@/types";
@@ -9,8 +9,14 @@ import { hrmsApi } from "./index";
 export const applicantApi = hrmsApi.injectEndpoints({
 	endpoints: (builder) => ({
 		getApplicants: builder.query<
-			ApiPaginatedResponse<Applicant>,
-			{ page?: number; limit?: number; jobPostId?: string } | undefined
+			{ items: Applicant[]; total: number },
+			| {
+					page?: number;
+					limit?: number;
+					jobPostId?: string;
+					companyId?: string;
+			  }
+			| undefined
 		>({
 			query: (params) => ({
 				url: "/applicant",
@@ -18,6 +24,7 @@ export const applicantApi = hrmsApi.injectEndpoints({
 					page: params?.page ?? 1,
 					limit: params?.limit ?? 100,
 					jobPostId: params?.jobPostId,
+					companyId: params?.companyId,
 				},
 			}),
 			providesTags: (result) =>
@@ -31,6 +38,14 @@ export const applicantApi = hrmsApi.injectEndpoints({
 							{ type: "Applicant", id: "LIST" },
 						]
 					: [{ type: "Applicant", id: "LIST" }],
+		}),
+		getApplicant: builder.query<Applicant, string>({
+			query: (id) => `/applicant/${id}`,
+			providesTags: (_result, _error, id) => [{ type: "Applicant", id }],
+		}),
+		getRecruitmentPipeline: builder.query<ApplicantPipelineStage[], string>({
+			query: (companyId) => `/applicant/pipeline/${companyId}`,
+			providesTags: [{ type: "Applicant", id: "PIPELINE" }],
 		}),
 		createApplicant: builder.mutation<Applicant, CreateApplicantRequest>({
 			query: (data) => ({
@@ -64,6 +79,8 @@ export const applicantApi = hrmsApi.injectEndpoints({
 
 export const {
 	useGetApplicantsQuery,
+	useGetApplicantQuery,
 	useCreateApplicantMutation,
 	useChangeApplicantStatusMutation,
+	useGetRecruitmentPipelineQuery,
 } = applicantApi;

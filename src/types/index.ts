@@ -321,6 +321,7 @@ export interface ApplicantPipelineStage {
 }
 
 export type ApplicantStatus =
+	| "APPLIED"
 	| "INTERVIEWED"
 	| "INTERVIEW_SCHEDULED"
 	| "OFFERED"
@@ -341,7 +342,7 @@ export interface Applicant {
 	image?: string;
 	jobPostId?: string;
 	referenceCode: string;
-	status: string;
+	status: ApplicantStatus;
 	score?: number;
 	gender?: "MALE" | "FEMALE";
 	documentNumber?: string;
@@ -349,7 +350,7 @@ export interface Applicant {
 	appliedAt?: string;
 	history?:
 		| {
-				status: string;
+				status: ApplicantStatus;
 				doneBy: string;
 				doneAt: string;
 				comment: string;

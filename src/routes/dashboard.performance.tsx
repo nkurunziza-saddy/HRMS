@@ -34,6 +34,23 @@ function PerformancePage() {
 	const reviews = Route.useLoaderData();
 	const activeReview = reviews[0];
 
+	if (!activeReview) {
+		return (
+			<main className="flex flex-1 flex-col gap-0 overflow-hidden">
+				<DashboardHeader
+					category="Growth & KPIs"
+					title="Performance Review"
+					description="Balanced Scorecard and quarterly appraisal console"
+				/>
+				<div className="flex-1 flex items-center justify-center">
+					<p className="text-muted-foreground text-sm font-medium tracking-tight">
+						No performance reviews found for this period.
+					</p>
+				</div>
+			</main>
+		);
+	}
+
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden">
 			<DashboardHeader

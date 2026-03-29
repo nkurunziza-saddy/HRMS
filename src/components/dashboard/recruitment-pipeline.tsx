@@ -3,6 +3,7 @@
 import { UserAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
 	Frame,
@@ -13,21 +14,53 @@ import {
 	FramePanel,
 	FrameTitle,
 } from "@/components/ui/frame";
-import { api } from "@/lib/mock-api";
-import type { ApplicantPipelineStage } from "@/types";
+import { useGetRecruitmentPipelineQuery } from "@/lib/redux/api/applicant";
+import type { RootState } from "@/lib/redux/store";
 
 export const RecruitmentPipeline = React.memo(function RecruitmentPipeline() {
-	const [pipeline, setPipeline] = React.useState<ApplicantPipelineStage[]>([]);
+	const activeCompanyId = useSelector(
+		(state: RootState) => state.auth.activeCompanyId,
+	);
+	const { data: pipeline = [], isLoading } = useGetRecruitmentPipelineQuery(
+		activeCompanyId || "",
+		{ skip: !activeCompanyId },
+	);
 
-	React.useEffect(() => {
-		async function loadData() {
-			const data = await api.getRecruitmentPipeline();
-			setPipeline(data);
-		}
-		loadData();
-	}, []);
+	if (isLoading) {
+		return (
+			<Frame className="h-full group/frame">
+				<FramePanel className="flex flex-col h-full overflow-hidden">
+					<FrameHeader>
+						<div>
+							<FrameTitle>Recruitment Pipeline</FrameTitle>
+							<FrameDescription>Loading pipeline data...</FrameDescription>
+						</div>
+					</FrameHeader>
+					<FrameContent className="p-6 flex-1 flex items-center justify-center">
+						<div className="size-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+					</FrameContent>
+				</FramePanel>
+			</Frame>
+		);
+	}
 
-	if (!pipeline.length) return null;
+	if (!pipeline.length) {
+		return (
+			<Frame className="h-full group/frame">
+				<FramePanel className="flex flex-col h-full overflow-hidden">
+					<FrameHeader>
+						<div>
+							<FrameTitle>Recruitment Pipeline</FrameTitle>
+							<FrameDescription>Active applicants by stage</FrameDescription>
+						</div>
+					</FrameHeader>
+					<FrameContent className="p-6 flex-1 flex items-center justify-center">
+						<p className="text-sm text-muted-foreground">No data available</p>
+					</FrameContent>
+				</FramePanel>
+			</Frame>
+		);
+	}
 
 	const maxCount = Math.max(...pipeline.map((s) => s.count));
 

@@ -5,6 +5,9 @@ node_modules/
 .env*.local
 .DS_Store
 dist
+.output
 .tanstack
 .env
 ./env
+bun.lock
+bun.lockb

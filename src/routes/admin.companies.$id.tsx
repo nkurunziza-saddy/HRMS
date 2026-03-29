@@ -283,17 +283,15 @@ function CompanyDetailsPage() {
 											</FrameDescription>
 										</div>
 										<Dialog open={showAddAdmin} onOpenChange={setShowAddAdmin}>
-											<DialogTrigger
-												render={
-													<Button
-														size="sm"
-														className="text-xs font-bold gap-2 uppercase tracking-widest"
-													>
-														<HugeiconsIcon icon={PlusSignIcon} size={14} /> Add
-														Admin
-													</Button>
-												}
-											/>
+											<DialogTrigger>
+												<Button
+													size="sm"
+													className="text-xs font-bold gap-2 uppercase tracking-widest"
+												>
+													<HugeiconsIcon icon={PlusSignIcon} size={14} /> Add
+													Admin
+												</Button>
+											</DialogTrigger>
 											<DialogContent>
 												<Form {...form}>
 													<form onSubmit={form.handleSubmit(onSubmit)}>
@@ -468,20 +466,18 @@ function CompanyDetailsPage() {
 															</TableCell>
 															<TableCell className="text-right pr-6 py-4">
 																<AlertDialog>
-																	<AlertDialogTrigger
-																		render={
-																			<Button
-																				variant="ghost"
-																				size="icon-sm"
-																				className="text-destructive/40 hover:text-destructive hover:bg-destructive/5"
-																			>
-																				<HugeiconsIcon
-																					icon={Delete01Icon}
-																					size={16}
-																				/>
-																			</Button>
-																		}
-																	/>
+																	<AlertDialogTrigger>
+																		<Button
+																			variant="ghost"
+																			size="icon-sm"
+																			className="text-destructive/40 hover:text-destructive hover:bg-destructive/5"
+																		>
+																			<HugeiconsIcon
+																				icon={Delete01Icon}
+																				size={16}
+																			/>
+																		</Button>
+																	</AlertDialogTrigger>
 																	<AlertDialogContent>
 																		<AlertDialogHeader>
 																			<AlertDialogTitle>
@@ -607,18 +603,16 @@ function CompanyDetailsPage() {
 											</Button>
 
 											<AlertDialog>
-												<AlertDialogTrigger
-													render={
-														<Button
-															variant="outline"
-															disabled={isDeleting}
-															className="w-full justify-start gap-3 text-xs font-bold uppercase tracking-widest border-destructive/20 text-destructive hover:bg-destructive/5"
-														>
-															<HugeiconsIcon icon={Delete01Icon} size={16} />
-															Delete Organization
-														</Button>
-													}
-												/>
+												<AlertDialogTrigger>
+													<Button
+														variant="outline"
+														disabled={isDeleting}
+														className="w-full justify-start gap-3 text-xs font-bold uppercase tracking-widest border-destructive/20 text-destructive hover:bg-destructive/5"
+													>
+														<HugeiconsIcon icon={Delete01Icon} size={16} />
+														Delete Organization
+													</Button>
+												</AlertDialogTrigger>
 												<AlertDialogContent>
 													<AlertDialogHeader>
 														<AlertDialogTitle>

@@ -30,20 +30,26 @@ import {
 	FrameTitle,
 } from "@/components/ui/frame";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/lib/mock-api";
+import { useGetEmployeeQuery } from "@/lib/redux/api/employee";
 
 export const Route = createFileRoute("/dashboard/employees/$id")({
-	loader: async ({ params }) => await api.getEmployee(params.id),
 	errorComponent: ErrorComponent,
 	pendingComponent: DashboardPending,
 	component: EmployeeProfilePage,
 });
 
 function EmployeeProfilePage() {
-	const employee = Route.useLoaderData();
+	const { id } = Route.useParams();
+	const { data: employee, isLoading, isError } = useGetEmployeeQuery(id);
 	const navigate = useNavigate();
 
-	if (!employee) return null;
+	if (isLoading) return <DashboardPending />;
+	if (isError || !employee)
+		return (
+			<ErrorComponent
+				error={new Error("The requested employee profile could not be found.")}
+			/>
+		);
 
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden h-full bg-muted/20">

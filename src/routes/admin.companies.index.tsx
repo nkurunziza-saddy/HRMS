@@ -275,15 +275,11 @@ function CompaniesManagementPage() {
 																Details
 															</Button>
 															<DropdownMenu>
-																<DropdownMenuTrigger
-																	render={
-																		<Button variant="ghost" size="icon-sm">
-																			<HugeiconsIcon
-																				icon={MoreHorizontalIcon}
-																			/>
-																		</Button>
-																	}
-																/>
+																<DropdownMenuTrigger>
+																	<Button variant="ghost" size="icon-sm">
+																		<HugeiconsIcon icon={MoreHorizontalIcon} />
+																	</Button>
+																</DropdownMenuTrigger>
 																<DropdownMenuContent
 																	align="end"
 																	className="w-56 rounded-2xl border-border/40 shadow-2xl p-2"
@@ -322,20 +318,18 @@ function CompaniesManagementPage() {
 																		<span>Suspend Tenant</span>
 																	</DropdownMenuItem>
 																	<AlertDialog>
-																		<AlertDialogTrigger
-																			render={
-																				<DropdownMenuItem
-																					onSelect={(e) => e.preventDefault()}
-																					className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
-																				>
-																					<HugeiconsIcon
-																						icon={Delete01Icon}
-																						className="size-4 mr-3"
-																					/>
-																					<span>Purge Organization</span>
-																				</DropdownMenuItem>
-																			}
-																		/>
+																		<AlertDialogTrigger>
+																			<DropdownMenuItem
+																				onSelect={(e) => e.preventDefault()}
+																				className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
+																			>
+																				<HugeiconsIcon
+																					icon={Delete01Icon}
+																					className="size-4 mr-3"
+																				/>
+																				<span>Purge Organization</span>
+																			</DropdownMenuItem>
+																		</AlertDialogTrigger>
 																		<AlertDialogContent>
 																			<AlertDialogHeader>
 																				<AlertDialogTitle>

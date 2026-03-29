@@ -5,7 +5,6 @@ import {
 	Copy01Icon,
 	Delete02Icon,
 	Download01Icon,
-	FilterIcon,
 	JobShareIcon,
 	Location01Icon,
 	Mail01Icon,
@@ -53,15 +52,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-	Frame,
-	FrameContent,
-	FrameDescription,
-	FrameFooter,
-	FrameHeader,
-	FramePanel,
-	FrameTitle,
-} from "@/components/ui/frame";
+import { Frame, FramePanel } from "@/components/ui/frame";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -87,6 +78,8 @@ import {
 	useGetJobPostingsQuery,
 } from "@/lib/redux/api/job-posting";
 import { useGetJobTitlesQuery } from "@/lib/redux/api/job-title";
+import { useAppSelector } from "@/lib/redux/store";
+import { cn } from "@/lib/utils";
 import type {
 	JobPostingSkill,
 	JobPostingStatus,
@@ -98,7 +91,10 @@ export const Route = createFileRoute("/dashboard/recruitment/")({
 	component: RecruitmentPage,
 });
 
-const STATUS_VARIANT: Record<JobPostingStatus, "success" | "muted" | "destructive" | "warning"> = {
+const STATUS_VARIANT: Record<
+	JobPostingStatus,
+	"success" | "muted" | "destructive" | "warning"
+> = {
 	PUBLISHED: "success",
 	DRAFT: "muted",
 	CLOSED: "warning",
@@ -106,17 +102,25 @@ const STATUS_VARIANT: Record<JobPostingStatus, "success" | "muted" | "destructiv
 };
 
 function RecruitmentPage() {
+	const { activeCompanyId } = useAppSelector((state) => state.auth);
 	const {
 		data: postingsData,
 		isLoading,
 		isError,
-	} = useGetJobPostingsQuery(undefined);
-	const { data: applicantsData } = useGetApplicantsQuery(undefined);
+	} = useGetJobPostingsQuery(
+		activeCompanyId ? { companyId: activeCompanyId } : undefined,
+	);
+	const { data: applicantsData } = useGetApplicantsQuery(
+		activeCompanyId ? { companyId: activeCompanyId } : undefined,
+	);
 	const { data: jobTitlesData } = useGetJobTitlesQuery(undefined);
 	const [createJobPosting] = useCreateJobPostingMutation();
 	const [changeStatus] = useChangeJobPostingStatusMutation();
 
 	const [searchTerm, setSearchTerm] = useState("");
+	const [statusFilter, setStatusFilter] = useState<JobPostingStatus | "ALL">(
+		"ALL",
+	);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -129,11 +133,9 @@ function RecruitmentPage() {
 		workMode: "HYBRID" as WorkMode,
 		applicationDeadline: "",
 	});
-
-	const [skills, setSkills] = useState<JobPostingSkill[]>([
+	const [skills, setSkills] = useState<any[]>([
 		{ name: "", category: "TECHNICAL", isRequired: true },
 	]);
-
 	const [sectionItems, setSectionItems] = useState([{ content: "", order: 1 }]);
 
 	const resetForm = () => {
@@ -157,16 +159,26 @@ function RecruitmentPage() {
 	const applicants = applicantsData?.items || [];
 	const jobTitles = jobTitlesData?.items || [];
 
-	const filteredPostings = postings.filter(
-		(p) =>
+	const filteredPostings = postings.filter((p) => {
+		const matchesSearch =
 			p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			p.location.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
+			p.location.toLowerCase().includes(searchTerm.toLowerCase());
+		const matchesStatus = statusFilter === "ALL" || p.status === statusFilter;
+		return matchesSearch && matchesStatus;
+	});
 
-	const publishedCount = postings.filter((p) => p.status === "PUBLISHED").length;
+	const publishedCount = postings.filter(
+		(p) => p.status === "PUBLISHED",
+	).length;
+	const draftCount = postings.filter((p) => p.status === "DRAFT").length;
 
 	const handleCreate = async () => {
-		if (!form.title || !form.jobTitleId || !form.location || !form.applicationDeadline) {
+		if (
+			!form.title ||
+			!form.jobTitleId ||
+			!form.location ||
+			!form.applicationDeadline
+		) {
 			toast.error("Title, position, location and deadline are required");
 			return;
 		}
@@ -175,7 +187,7 @@ function RecruitmentPage() {
 			await createJobPosting({
 				...form,
 				applicationDeadline: new Date(form.applicationDeadline).toISOString(),
-				skills: skills.filter((s) => s.name.trim()),
+				skills: skills.filter((s) => s.name.trim()) as any,
 				sections: [
 					{
 						type: "KEY_RESPONSIBILITIES",
@@ -184,10 +196,10 @@ function RecruitmentPage() {
 						items: sectionItems
 							.filter((i) => i.content.trim())
 							.map((i, idx) => ({ content: i.content.trim(), order: idx + 1 })),
-					},
+					} as any,
 				],
 			}).unwrap();
-			toast.success("Job posting created successfully");
+			toast.success("Job posting created");
 			setIsDialogOpen(false);
 			resetForm();
 		} catch (err) {
@@ -199,18 +211,19 @@ function RecruitmentPage() {
 	};
 
 	const handleCopyLink = (postingId: string) => {
-		const url = `${window.location.origin}/apply/${postingId}`;
-		navigator.clipboard.writeText(url);
-		toast.success("Application link copied to clipboard");
+		navigator.clipboard.writeText(
+			`${window.location.origin}/apply/${postingId}`,
+		);
+		toast.success("Link copied");
 	};
 
 	const handleChangeStatus = async (id: string, status: JobPostingStatus) => {
 		try {
 			await changeStatus({ id, status }).unwrap();
-			toast.success(`Posting ${status.toLowerCase()} successfully`);
+			toast.success(`Posting ${status.toLowerCase()}`);
 		} catch (err) {
 			console.error(err);
-			toast.error("Failed to update posting status");
+			toast.error("Failed to update status");
 		}
 	};
 
@@ -219,84 +232,90 @@ function RecruitmentPage() {
 			...prev,
 			{ name: "", category: "TECHNICAL", isRequired: false },
 		]);
-
 	const removeSkill = (i: number) =>
 		setSkills((prev) => prev.filter((_, idx) => idx !== i));
-
 	const updateSkill = (i: number, patch: Partial<JobPostingSkill>) =>
-		setSkills((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
-
+		setSkills((prev) =>
+			prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)),
+		);
 	const addSectionItem = () =>
 		setSectionItems((prev) => [
 			...prev,
 			{ content: "", order: prev.length + 1 },
 		]);
-
 	const removeSectionItem = (i: number) =>
 		setSectionItems((prev) => prev.filter((_, idx) => idx !== i));
 
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden bg-muted/20">
 			<DashboardHeader
-				category="talent"
+				category="Talent"
 				title="Recruitment"
-				description="source and manage hiring pipelines"
+				description="Source and manage hiring pipelines"
 			>
-				<Button variant="outline">
-					<HugeiconsIcon icon={Download01Icon} />
-					Report
+				<Button
+					variant="outline"
+					size="lg"
+					className="h-9 gap-2 text-xs font-semibold border-border/40"
+				>
+					<HugeiconsIcon icon={Download01Icon} size={14} />
+					Export Report
 				</Button>
 
 				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-					<DialogTrigger
-						render={
-							<Button>
-								<HugeiconsIcon icon={PlusSignCircleIcon} />
-								Create
-							</Button>
-						}
-					/>
-					<DialogContent className="sm:max-w-160 rounded-2xl max-h-[90vh] overflow-y-auto">
+					<DialogTrigger>
+						<Button
+							size="lg"
+							className="h-9 px-4 rounded-xl text-xs font-bold gap-2"
+						>
+							<HugeiconsIcon icon={PlusSignCircleIcon} size={14} />
+							New Posting
+						</Button>
+					</DialogTrigger>
+					<DialogContent className="sm:max-w-2xl rounded-2xl max-h-[90vh] overflow-y-auto">
 						<DialogHeader>
 							<DialogTitle>Publish New Job Posting</DialogTitle>
 							<DialogDescription>
-								Define a new job opening for the recruitment portal.
+								Define a new opening for the recruitment portal.
 							</DialogDescription>
 						</DialogHeader>
 
-						<div className="grid gap-6 py-4">
-							{/* Basic info */}
+						<div className="grid gap-5 py-4">
 							<div className="grid grid-cols-2 gap-4">
 								<div className="col-span-2 space-y-2">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Posting Title
 									</Label>
 									<Input
 										placeholder="e.g. Open Engineering Application (Mid-Senior)"
 										value={form.title}
-										onChange={(e) => setForm({ ...form, title: e.target.value })}
+										onChange={(e) =>
+											setForm({ ...form, title: e.target.value })
+										}
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Position
 									</Label>
 									<Select
 										value={form.jobTitleId}
-										onValueChange={(v) => setForm({ ...form, jobTitleId: v })}
+										onValueChange={(v) =>
+											setForm({ ...form, jobTitleId: v || "" })
+										}
 									>
 										<SelectTrigger>
 											<SelectValue>
-												{(value: string | null) => {
-													if (!value) return "Select a position";
-													const jt = jobTitles.find((t) => t.id === value);
-													return jt?.name ?? value;
-												}}
+												{form.jobTitleId
+													? jobTitles.find(
+															(jt: any) => jt.id === form.jobTitleId,
+														)?.name || "Select a position"
+													: "Select a position"}
 											</SelectValue>
 										</SelectTrigger>
 										<SelectContent>
 											{jobTitles.length ? (
-												jobTitles.map((jt) => (
+												jobTitles.map((jt: any) => (
 													<SelectItem key={jt.id} value={jt.id}>
 														{jt.name}
 													</SelectItem>
@@ -310,7 +329,7 @@ function RecruitmentPage() {
 									</Select>
 								</div>
 								<div className="space-y-2">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Work Mode
 									</Label>
 									<Select
@@ -330,17 +349,19 @@ function RecruitmentPage() {
 									</Select>
 								</div>
 								<div className="space-y-2">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Location
 									</Label>
 									<Input
 										placeholder="e.g. Kigali, Rwanda"
 										value={form.location}
-										onChange={(e) => setForm({ ...form, location: e.target.value })}
+										onChange={(e) =>
+											setForm({ ...form, location: e.target.value })
+										}
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Application Deadline
 									</Label>
 									<Input
@@ -353,34 +374,36 @@ function RecruitmentPage() {
 								</div>
 							</div>
 
-							{/* About */}
 							<div className="space-y-2">
-								<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+								<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 									About the Role
 								</Label>
 								<Textarea
 									placeholder="Describe the role, team, and what success looks like..."
 									className="min-h-20 resize-none"
 									value={form.aboutRole}
-									onChange={(e) => setForm({ ...form, aboutRole: e.target.value })}
+									onChange={(e) =>
+										setForm({ ...form, aboutRole: e.target.value })
+									}
 								/>
 							</div>
 							<div className="space-y-2">
-								<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+								<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 									Mission
 								</Label>
 								<Textarea
 									placeholder="What will this person build or achieve?"
 									className="min-h-16 resize-none"
 									value={form.mission}
-									onChange={(e) => setForm({ ...form, mission: e.target.value })}
+									onChange={(e) =>
+										setForm({ ...form, mission: e.target.value })
+									}
 								/>
 							</div>
 
-							{/* Key Responsibilities */}
 							<div className="space-y-3">
 								<div className="flex items-center justify-between">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Key Responsibilities
 									</Label>
 									<Button
@@ -390,7 +413,7 @@ function RecruitmentPage() {
 										className="text-xs h-7"
 										onClick={addSectionItem}
 									>
-										+ Add item
+										+ Add
 									</Button>
 								</div>
 								{sectionItems.map((item, i) => (
@@ -421,10 +444,9 @@ function RecruitmentPage() {
 								))}
 							</div>
 
-							{/* Skills */}
 							<div className="space-y-3">
 								<div className="flex items-center justify-between">
-									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+									<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 ml-1">
 										Skills
 									</Label>
 									<Button
@@ -434,7 +456,7 @@ function RecruitmentPage() {
 										className="text-xs h-7"
 										onClick={addSkill}
 									>
-										+ Add skill
+										+ Add
 									</Button>
 								</div>
 								{skills.map((skill, i) => (
@@ -451,7 +473,7 @@ function RecruitmentPage() {
 												updateSkill(i, { category: v as SkillCategory })
 											}
 										>
-											<SelectTrigger className="w-32">
+											<SelectTrigger className="w-28">
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
@@ -469,7 +491,7 @@ function RecruitmentPage() {
 												}
 												className="rounded"
 											/>
-											Required
+											Req
 										</label>
 										{skills.length > 1 && (
 											<Button
@@ -487,18 +509,18 @@ function RecruitmentPage() {
 							</div>
 						</div>
 
-						<DialogFooter className="bg-muted/5 -mx-6 -mb-6 p-6 rounded-b-2xl border-t border-border/5">
+						<DialogFooter className="bg-muted/5 -mx-6 -mb-6 p-5 rounded-b-2xl border-t border-border/5">
 							<Button
 								variant="ghost"
 								onClick={() => setIsDialogOpen(false)}
 								className="font-bold text-xs uppercase tracking-widest"
 							>
-								cancel
+								Cancel
 							</Button>
 							<Button
 								onClick={handleCreate}
 								disabled={isSubmitting}
-								className="font-bold px-8 h-10 rounded-xl"
+								className="font-bold px-8 h-9 rounded-xl"
 							>
 								{isSubmitting ? "Publishing..." : "Publish Posting"}
 							</Button>
@@ -507,84 +529,112 @@ function RecruitmentPage() {
 				</Dialog>
 			</DashboardHeader>
 
-			<div className="flex flex-col xl:flex-row gap-8 pb-12 flex-1 overflow-auto no-scrollbar px-4 lg:px-6">
-				<div className="flex-1 min-w-0 space-y-8">
-					<section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-						<StatCard
-							label="Active Openings"
-							value={publishedCount}
-							icon={JobShareIcon}
-							variant="primary"
-							sub="Postings published"
-						/>
-						<StatCard
-							label="Total Applicants"
-							value={applicants.length.toString()}
-							icon={UserMultiple02Icon}
-							variant="info"
-							sub="Pipeline across roles"
-						/>
-						<StatCard
-							label="Time to Hire"
-							value="18d"
-							icon={Sorting05Icon}
-							variant="success"
-							sub="Average duration"
-						/>
-					</section>
+			<div className="flex-1 overflow-auto no-scrollbar px-4 lg:px-6 pb-12 py-6">
+				<div className="max-w-screen-xl mx-auto">
+					<div className="flex flex-col xl:flex-row gap-6 items-start">
+						{/* ── Left: Main Content ── */}
+						<div className="flex-1 min-w-0 space-y-6">
+							{/* Stats */}
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+								<StatCard
+									label="Active Openings"
+									value={publishedCount}
+									icon={JobShareIcon}
+									variant="primary"
+									sub="Postings published"
+								/>
+								<StatCard
+									label="Total Applicants"
+									value={applicants.length.toString()}
+									icon={UserMultiple02Icon}
+									variant="info"
+									sub="Pipeline across roles"
+								/>
+								<StatCard
+									label="Time to Hire"
+									value="18d"
+									icon={Sorting05Icon}
+									variant="success"
+									sub="Average duration"
+								/>
+							</div>
 
-					<section>
-						<Frame className="group/frame">
-							<FramePanel className="p-0 overflow-hidden bg-card border-border/40">
-								<FrameHeader className="border-b-0 pb-2 px-8 pt-8">
-									<div>
-										<FrameTitle className="text-lg font-bold">
-											Active Pipelines
-										</FrameTitle>
-										<FrameDescription className="text-xs font-medium">
-											Monitor and manage active hiring cycles
-										</FrameDescription>
+							{/* Postings table */}
+							<Frame>
+								<FramePanel className="bg-card border-border/30 p-0 overflow-hidden">
+									<div className="px-6 pt-6 pb-4">
+										<div className="flex items-start justify-between gap-4 mb-5">
+											<div>
+												<h3 className="text-sm font-bold text-foreground/90">
+													Active Pipelines
+												</h3>
+												<p className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-widest mt-0.5">
+													{filteredPostings.length} of {postings.length}{" "}
+													requisitions
+												</p>
+											</div>
+										</div>
+
+										{/* Search + filter row */}
+										<div className="flex items-center gap-2">
+											<div className="relative flex-1">
+												<HugeiconsIcon
+													icon={Search01Icon}
+													className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/30"
+													strokeWidth={2}
+												/>
+												<Input
+													placeholder="Search by title or location…"
+													value={searchTerm}
+													onChange={(e) => setSearchTerm(e.target.value)}
+													className="pl-9 h-9 rounded-xl border-border/30 bg-muted/5 text-sm"
+												/>
+											</div>
+											{/* Status filter chips */}
+											<div className="flex items-center gap-1.5">
+												{(
+													[
+														"ALL",
+														"PUBLISHED",
+														"DRAFT",
+														"CLOSED",
+														"ARCHIVED",
+													] as const
+												).map((s) => (
+													<button
+														key={s}
+														onClick={() => setStatusFilter(s)}
+														className={cn(
+															"h-9 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all",
+															statusFilter === s
+																? "bg-primary text-white border-primary"
+																: "bg-muted/5 text-muted-foreground/40 border-border/20 hover:border-border/40",
+														)}
+													>
+														{s === "ALL" ? "All" : s}
+													</button>
+												))}
+											</div>
+										</div>
 									</div>
-								</FrameHeader>
 
-								<div className="px-8 pb-6 pt-4 flex flex-col xl:flex-row items-center justify-between gap-4 border-b border-border/5">
-									<div className="relative flex-1 w-full max-xl">
-										<HugeiconsIcon
-											icon={Search01Icon}
-											className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/40"
-											strokeWidth={2}
-										/>
-										<Input
-											placeholder="Search postings or location…"
-											value={searchTerm}
-											onChange={(e) => setSearchTerm(e.target.value)}
-											className="pl-9 h-10 rounded-xl border-border/40 bg-muted/5 focus:bg-background transition-all text-sm"
-										/>
-									</div>
-									<Button variant="outline" size="sm">
-										<HugeiconsIcon icon={FilterIcon} />
-										Refine
-									</Button>
-								</div>
-
-								<FrameContent className="p-0">
 									<Table>
-										<TableHeader className="bg-muted/5">
-											<TableRow className="hover:bg-transparent border-border/5">
-												<TableHead className="text-[10px] font-bold text-muted-foreground/40 capitalize tracking-widest pl-8 py-3 w-[320px]">
-													Posting
+										<TableHeader>
+											<TableRow className="hover:bg-transparent border-border/5 bg-muted/[0.03]">
+												<TableHead className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] pl-6 py-3">
+													Position
 												</TableHead>
-												<TableHead className="text-[10px] font-bold text-muted-foreground/40 capitalize tracking-widest px-4 py-3">
+												<TableHead className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] px-4 py-3 hidden md:table-cell">
 													Mode
 												</TableHead>
-												<TableHead className="text-[10px] font-bold text-muted-foreground/40 capitalize tracking-widest px-4 py-3">
+												<TableHead className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] px-4 py-3">
 													Status
 												</TableHead>
-												<TableHead className="text-[10px] font-bold text-muted-foreground/40 capitalize tracking-widest px-4 py-3">
+												<TableHead className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] px-4 py-3 hidden lg:table-cell">
 													Deadline
 												</TableHead>
-												<TableHead className="text-[10px] font-bold text-muted-foreground/40 capitalize tracking-widest px-4 py-3 text-right pr-8">
-													Management
+												<TableHead className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-[0.2em] px-4 py-3 text-right pr-6">
+													Actions
 												</TableHead>
 											</TableRow>
 										</TableHeader>
@@ -594,28 +644,28 @@ function RecruitmentPage() {
 													key={posting.id}
 													className="border-border/5 hover:bg-muted/5 transition-colors group"
 												>
-													<TableCell className="pl-8 py-5">
-														<div>
-															<p className="text-sm font-bold text-foreground/90 group-hover:text-primary transition-colors leading-none">
+													<TableCell className="pl-6 py-4">
+														<Link
+															to="/dashboard/recruitment/$id"
+															params={{ id: posting.id }}
+															className="block"
+														>
+															<p className="text-sm font-bold text-foreground/85 group-hover:text-primary transition-colors leading-tight">
 																{posting.title}
 															</p>
-															<div className="flex items-center gap-3 mt-2 text-xs font-semibold text-muted-foreground/40 uppercase tracking-widest">
-																<span className="flex items-center gap-1.5">
-																	<HugeiconsIcon icon={Briefcase01Icon} size={12} />
-																	{posting.workMode}
-																</span>
-																<span>•</span>
-																<span className="flex items-center gap-1.5">
-																	<HugeiconsIcon icon={Location01Icon} size={12} />
-																	{posting.location}
-																</span>
+															<div className="flex items-center gap-2 mt-1 text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+																<HugeiconsIcon
+																	icon={Location01Icon}
+																	size={10}
+																/>
+																{posting.location}
 															</div>
-														</div>
+														</Link>
 													</TableCell>
-													<TableCell className="px-4">
-														<div className="flex items-center justify-center h-8 px-2 rounded-lg bg-primary/5 text-primary text-[10px] font-black uppercase tabular-nums border border-primary/10">
+													<TableCell className="px-4 hidden md:table-cell">
+														<span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">
 															{posting.workMode}
-														</div>
+														</span>
 													</TableCell>
 													<TableCell className="px-4">
 														<Badge
@@ -623,25 +673,27 @@ function RecruitmentPage() {
 																STATUS_VARIANT[posting.status] ?? "muted"
 															}
 															showDot
-															className="font-bold text-[10px] uppercase tracking-widest h-6"
+															className="font-bold text-[9px] uppercase tracking-widest h-5 px-2"
 														>
 															{posting.status}
 														</Badge>
 													</TableCell>
-													<TableCell className="px-4">
-														<div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground/60">
-															<HugeiconsIcon
-																icon={Calendar01Icon}
-																size={12}
-															/>
-															{new Date(posting.applicationDeadline).toLocaleDateString()}
+													<TableCell className="px-4 hidden lg:table-cell">
+														<div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground/50">
+															<HugeiconsIcon icon={Calendar01Icon} size={11} />
+															{new Date(
+																posting.applicationDeadline,
+															).toLocaleDateString(undefined, {
+																dateStyle: "medium",
+															})}
 														</div>
 													</TableCell>
-													<TableCell className="text-right pr-8">
-														<div className="flex items-center justify-end gap-2">
+													<TableCell className="text-right pr-6">
+														<div className="flex items-center justify-end gap-1.5">
 															<Button
 																variant="ghost"
 																size="sm"
+																className="h-8 text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"
 																render={
 																	<Link
 																		to="/dashboard/recruitment/$id"
@@ -649,91 +701,119 @@ function RecruitmentPage() {
 																	/>
 																}
 															>
-																Details
+																Open
 															</Button>
 															<DropdownMenu>
-																<DropdownMenuTrigger
-																	render={
-																		<Button variant="ghost" size="icon-sm">
-																			<HugeiconsIcon icon={MoreHorizontalIcon} />
-																		</Button>
-																	}
-																/>
+																<DropdownMenuTrigger>
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		className="h-8 w-8"
+																	>
+																		<HugeiconsIcon
+																			icon={MoreHorizontalIcon}
+																			className="size-4 text-muted-foreground/40"
+																		/>
+																	</Button>
+																</DropdownMenuTrigger>
 																<DropdownMenuContent
 																	align="end"
-																	className="w-52 rounded-2xl border-border/40 shadow-2xl p-2"
+																	className="w-48 rounded-2xl border-border/40 p-2"
 																>
 																	<DropdownMenuItem
-																		className="rounded-xl py-1.5 font-semibold text-sm"
+																		className="rounded-xl py-2 font-semibold text-xs"
 																		onClick={() => handleCopyLink(posting.id)}
 																	>
 																		<HugeiconsIcon
 																			icon={Copy01Icon}
-																			className="size-4 mr-3 text-muted-foreground/60"
+																			className="size-3.5 mr-2.5 text-muted-foreground/40"
 																		/>
-																		<span>Copy Job Link</span>
+																		Copy Job Link
 																	</DropdownMenuItem>
-																	<DropdownMenuItem className="rounded-xl py-1.5 font-semibold text-sm">
+																	<DropdownMenuItem className="rounded-xl py-2 font-semibold text-xs">
 																		<HugeiconsIcon
 																			icon={UserAdd01Icon}
-																			className="size-4 mr-3 text-muted-foreground/60"
+																			className="size-3.5 mr-2.5 text-muted-foreground/40"
 																		/>
-																		<span>Add Candidate</span>
+																		Add Candidate
 																	</DropdownMenuItem>
-																	<DropdownMenuItem className="rounded-xl py-1.5 font-semibold text-sm">
+																	<DropdownMenuItem className="rounded-xl py-2 font-semibold text-xs">
 																		<HugeiconsIcon
 																			icon={Mail01Icon}
-																			className="size-4 mr-3 text-muted-foreground/60"
+																			className="size-3.5 mr-2.5 text-muted-foreground/40"
 																		/>
-																		<span>Broadcast</span>
+																		Broadcast
 																	</DropdownMenuItem>
 																	<DropdownMenuSeparator className="bg-border/5 my-1" />
 																	{posting.status !== "PUBLISHED" && (
 																		<DropdownMenuItem
-																			className="rounded-xl py-1.5 font-semibold text-sm text-success focus:bg-success/5 focus:text-success"
-																			onClick={() => handleChangeStatus(posting.id, "PUBLISHED")}
+																			className="rounded-xl py-2 font-semibold text-xs text-success focus:bg-success/5"
+																			onClick={() =>
+																				handleChangeStatus(
+																					posting.id,
+																					"PUBLISHED",
+																				)
+																			}
 																		>
-																			<HugeiconsIcon icon={JobShareIcon} className="size-4 mr-3" />
-																			<span>Publish</span>
+																			<HugeiconsIcon
+																				icon={JobShareIcon}
+																				className="size-3.5 mr-2.5"
+																			/>
+																			Publish
 																		</DropdownMenuItem>
 																	)}
 																	{posting.status !== "CLOSED" && (
 																		<DropdownMenuItem
-																			className="rounded-xl py-1.5 font-semibold text-sm text-warning focus:bg-warning/5 focus:text-warning"
-																			onClick={() => handleChangeStatus(posting.id, "CLOSED")}
+																			className="rounded-xl py-2 font-semibold text-xs text-warning focus:bg-warning/5"
+																			onClick={() =>
+																				handleChangeStatus(posting.id, "CLOSED")
+																			}
 																		>
-																			<HugeiconsIcon icon={Delete02Icon} className="size-4 mr-3" />
-																			<span>Close Opening</span>
+																			<HugeiconsIcon
+																				icon={Delete02Icon}
+																				className="size-3.5 mr-2.5"
+																			/>
+																			Close Opening
 																		</DropdownMenuItem>
 																	)}
 																	{posting.status !== "ARCHIVED" && (
 																		<AlertDialog>
-																			<AlertDialogTrigger
-																				render={
-																					<DropdownMenuItem
-																						onSelect={(e) => e.preventDefault()}
-																						className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
-																					>
-																						<HugeiconsIcon icon={Delete02Icon} className="size-4 mr-3" />
-																						<span>Archive</span>
-																					</DropdownMenuItem>
-																				}
-																			/>
+																			<AlertDialogTrigger>
+																				<DropdownMenuItem
+																					onSelect={(e) => e.preventDefault()}
+																					className="rounded-xl py-2 font-semibold text-xs text-destructive focus:bg-destructive/5"
+																				>
+																					<HugeiconsIcon
+																						icon={Delete02Icon}
+																						className="size-3.5 mr-2.5"
+																					/>
+																					Archive
+																				</DropdownMenuItem>
+																			</AlertDialogTrigger>
 																			<AlertDialogContent>
 																				<AlertDialogHeader>
-																					<AlertDialogTitle>Archive this posting?</AlertDialogTitle>
+																					<AlertDialogTitle>
+																						Archive this posting?
+																					</AlertDialogTitle>
 																					<AlertDialogDescription>
-																						This will permanently archive the posting and notify
-																						pending candidates. This action is recorded for metrics.
+																						This will archive the posting and
+																						notify pending candidates.
 																					</AlertDialogDescription>
 																				</AlertDialogHeader>
 																				<AlertDialogFooter>
-																					<AlertDialogCancel>Cancel</AlertDialogCancel>
+																					<AlertDialogCancel>
+																						Cancel
+																					</AlertDialogCancel>
 																					<AlertDialogAction
 																						className="bg-destructive hover:bg-destructive/90"
-																						onClick={() => handleChangeStatus(posting.id, "ARCHIVED")}
+																						onClick={() =>
+																							handleChangeStatus(
+																								posting.id,
+																								"ARCHIVED",
+																							)
+																						}
 																					>
-																						Archive Posting
+																						Archive
 																					</AlertDialogAction>
 																				</AlertDialogFooter>
 																			</AlertDialogContent>
@@ -747,49 +827,82 @@ function RecruitmentPage() {
 											))}
 											{filteredPostings.length === 0 && (
 												<TableRow>
-													<TableCell
-														colSpan={5}
-														className="py-12 text-center text-muted-foreground/50 text-sm font-medium"
-													>
-														No job postings found.
+													<TableCell colSpan={5} className="py-14 text-center">
+														<div className="flex flex-col items-center gap-3">
+															<div className="h-12 w-12 rounded-2xl bg-muted/5 border border-dashed border-border/30 flex items-center justify-center">
+																<HugeiconsIcon
+																	icon={Briefcase01Icon}
+																	size={20}
+																	className="text-muted-foreground/20"
+																/>
+															</div>
+															<p className="text-sm font-bold text-muted-foreground/40 uppercase tracking-widest">
+																No postings found
+															</p>
+														</div>
 													</TableCell>
 												</TableRow>
 											)}
 										</TableBody>
 									</Table>
-								</FrameContent>
 
-								<FrameFooter className="px-8 py-5 border-t border-border/5">
-									<p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em]">
-										Registry Ledger: {filteredPostings.length} requisitions
-									</p>
-								</FrameFooter>
-							</FramePanel>
-						</Frame>
-					</section>
-				</div>
-
-				<div className="w-full xl:w-100 space-y-8">
-					<Frame>
-						<FramePanel className="p-0 overflow-hidden bg-card border-border/40 shadow-sm">
-							<FrameHeader className="px-8 pt-8 border-b-0 pb-2">
-								<div>
-									<FrameTitle className="text-base font-bold">
-										Recent Candidates
-									</FrameTitle>
-									<FrameDescription className="text-xs font-medium uppercase tracking-widest opacity-60">
-										Latest movements
-									</FrameDescription>
-								</div>
-							</FrameHeader>
-							<FrameContent className="p-0 pt-4">
-								<div className="divide-y divide-border/5">
-									{applicants.slice(0, 5).map((candidate) => (
-										<div
-											key={candidate.id}
-											className="p-6 hover:bg-muted/5 transition-all group/candidate cursor-pointer"
+									<div className="px-6 py-4 border-t border-border/5 bg-muted/[0.02] flex items-center justify-between">
+										<p className="text-[9px] text-muted-foreground/30 font-black uppercase tracking-[0.2em]">
+											{filteredPostings.length} requisitions shown
+										</p>
+										<Button
+											variant="ghost"
+											size="sm"
+											className="h-7 text-[9px] font-black text-primary/50 hover:text-primary hover:bg-primary/5 uppercase tracking-widest rounded-xl"
 										>
-											<div className="flex items-start gap-4">
+											Export All
+										</Button>
+									</div>
+								</FramePanel>
+							</Frame>
+						</div>
+
+						{/* ── Right: Sidebar ── */}
+						<div className="w-full xl:w-72 space-y-4 shrink-0">
+							{/* Quick stats */}
+							<div className="grid grid-cols-2 gap-3">
+								<div className="bg-card rounded-2xl border border-border/30 p-4">
+									<span className="text-3xl font-black text-foreground/90 tabular-nums">
+										{publishedCount}
+									</span>
+									<p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-widest mt-1">
+										Published
+									</p>
+								</div>
+								<div className="bg-card rounded-2xl border border-border/30 p-4">
+									<span className="text-3xl font-black text-foreground/90 tabular-nums">
+										{draftCount}
+									</span>
+									<p className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-widest mt-1">
+										Drafts
+									</p>
+								</div>
+							</div>
+
+							{/* Recent Candidates */}
+							<Frame>
+								<FramePanel className="bg-card border-border/30 p-0 overflow-hidden">
+									<div className="px-5 pt-5 pb-3 border-b border-border/5">
+										<h3 className="text-sm font-bold text-foreground/85">
+											Recent Applicants
+										</h3>
+										<p className="text-[9px] font-black text-muted-foreground/25 uppercase tracking-widest mt-0.5">
+											Latest submissions
+										</p>
+									</div>
+									<div className="divide-y divide-border/5">
+										{applicants.slice(0, 5).map((candidate) => (
+											<Link
+												key={candidate.id}
+												to="/dashboard/recruitment/applicant/$id"
+												params={{ id: candidate.id }}
+												className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/5 transition-colors group/c block"
+											>
 												<UserAvatar
 													name={
 														candidate.firstName
@@ -798,65 +911,72 @@ function RecruitmentPage() {
 													}
 													src={candidate.image}
 													size="lg"
-													className="rounded-xl ring-2 ring-background shadow-sm"
+													className="h-8 w-8 rounded-xl ring-1 ring-border/10 shrink-0"
 												/>
-												<div className="flex-1 min-w-0 pt-0.5">
-													<div className="flex items-start justify-between gap-2">
-														<p className="text-sm font-bold text-foreground/90 leading-tight truncate group-hover/candidate:text-primary transition-colors">
-															{candidate.firstName
-																? `${candidate.firstName} ${candidate.lastName}`
-																: candidate.referenceCode}
-														</p>
-														<span className="text-[9px] font-black text-muted-foreground/30 uppercase tracking-widest shrink-0 mt-0.5 tabular-nums">
-															{new Date(candidate.createdAt).toLocaleDateString()}
-														</span>
-													</div>
-													<p className="text-[10px] font-semibold text-muted-foreground/60 mt-1 truncate uppercase tracking-wider">
-														{candidate.status}
+												<div className="flex-1 min-w-0">
+													<p className="text-xs font-bold text-foreground/80 truncate group-hover/c:text-primary transition-colors leading-tight">
+														{candidate.firstName
+															? `${candidate.firstName} ${candidate.lastName}`
+															: candidate.referenceCode}
 													</p>
-													<div className="mt-4">
-														<Badge
-															variant="info"
-															className="h-5 rounded-lg px-2 text-[9px] font-black uppercase tracking-widest"
-														>
-															{candidate.status}
-														</Badge>
-													</div>
+													<p className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest mt-0.5">
+														{candidate.status?.replace(/_/g, " ")}
+													</p>
 												</div>
+												<span className="text-[9px] font-bold text-muted-foreground/25 tabular-nums shrink-0">
+													{new Date(candidate.createdAt).toLocaleDateString(
+														undefined,
+														{ month: "short", day: "numeric" },
+													)}
+												</span>
+											</Link>
+										))}
+										{applicants.length === 0 && (
+											<div className="px-5 py-8 text-center">
+												<p className="text-xs font-bold text-muted-foreground/30 uppercase tracking-widest">
+													No applicants yet
+												</p>
 											</div>
-										</div>
-									))}
-								</div>
-							</FrameContent>
-							<FrameFooter className="border-t border-border/5 px-8 py-6">
-								<Button variant="outline" className="w-full">
-									View Global Talent Pool
-								</Button>
-							</FrameFooter>
-						</FramePanel>
-					</Frame>
+										)}
+									</div>
+									<div className="p-4 border-t border-border/5">
+										<Button
+											variant="outline"
+											className="w-full text-[10px] font-bold uppercase tracking-widest h-9 rounded-xl border-border/30"
+										>
+											View Talent Pool
+										</Button>
+									</div>
+								</FramePanel>
+							</Frame>
 
-					<Frame>
-						<FramePanel className="p-8 flex flex-col gap-6 bg-primary/2 border-primary/10 rounded-[2rem] relative overflow-hidden group">
-							<div className="flex items-center gap-4 relative z-10">
-								<div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-sm shadow-primary/5">
-									<HugeiconsIcon icon={UserAdd01Icon} size={24} />
-								</div>
-								<div>
-									<p className="text-base font-bold text-foreground/90 leading-none mb-1.5">
-										External Agencies
-									</p>
-									<p className="text-xs font-semibold text-muted-foreground/50 tracking-tight">
-										Invite recruiters to collaborate
-									</p>
-								</div>
-							</div>
-							<Button variant="outline" className="w-full">
-								Provision Access
-								<HugeiconsIcon icon={ArrowRight01Icon} />
-							</Button>
-						</FramePanel>
-					</Frame>
+							{/* External Agencies */}
+							<Frame>
+								<FramePanel className="bg-card border-border/30 p-5">
+									<div className="flex items-center gap-3 mb-4">
+										<div className="h-10 w-10 rounded-2xl bg-primary/8 flex items-center justify-center text-primary/60 border border-primary/10 shrink-0">
+											<HugeiconsIcon icon={UserAdd01Icon} size={18} />
+										</div>
+										<div>
+											<p className="text-sm font-bold text-foreground/80 leading-tight">
+												External Agencies
+											</p>
+											<p className="text-[10px] font-medium text-muted-foreground/40 mt-0.5">
+												Invite recruiters to collaborate
+											</p>
+										</div>
+									</div>
+									<Button
+										variant="outline"
+										className="w-full gap-2 text-[10px] font-bold uppercase tracking-widest h-9 rounded-xl border-border/30"
+									>
+										Provision Access
+										<HugeiconsIcon icon={ArrowRight01Icon} size={12} />
+									</Button>
+								</FramePanel>
+							</Frame>
+						</div>
+					</div>
 				</div>
 			</div>
 		</main>

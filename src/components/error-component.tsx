@@ -7,8 +7,8 @@ export function ErrorComponent({
 	error,
 	reset,
 }: {
-	error: Error;
-	reset: () => void;
+	error?: Error;
+	reset?: () => void;
 }) {
 	return (
 		<div className="flex flex-1 items-center justify-center p-6">
@@ -22,14 +22,16 @@ export function ErrorComponent({
 							Something went wrong
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							{error.message ||
+							{error?.message ||
 								"An unexpected error occurred while loading this page."}
 						</p>
 					</div>
-					<Button onClick={() => reset()} className="w-full gap-2 font-bold">
-						<HugeiconsIcon icon={Loading03Icon} size={16} />
-						Try Again
-					</Button>
+					{reset && (
+						<Button onClick={() => reset()} className="w-full gap-2 font-bold">
+							<HugeiconsIcon icon={Loading03Icon} size={16} />
+							Try Again
+						</Button>
+					)}
 				</FramePanel>
 			</Frame>
 		</div>

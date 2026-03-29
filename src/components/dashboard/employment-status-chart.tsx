@@ -158,12 +158,13 @@ export const EmploymentStatusChart = React.memo(
 									paddingAngle={2}
 									className="outline-none"
 									style={{ cursor: "pointer" }}
-									onClick={(data) => {
+									onClick={(data: any) => {
 										if (data?.type) {
 											setSelected(data.type);
 										}
 									}}
 								>
+									{" "}
 									{chartData.map((entry, index) => (
 										<Cell
 											key={`cell-${index}`}

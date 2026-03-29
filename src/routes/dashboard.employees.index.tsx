@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardPending } from "@/components/dashboard/dashboard-pending";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
+import { ErrorComponent } from "@/components/error-component";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -63,17 +64,31 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useEmployees } from "@/hooks/use-employees";
-import { api } from "@/lib/mock-api";
+import {
+	useDeleteEmployeeMutation,
+	useGetEmployeesQuery,
+} from "@/lib/redux/api/employee";
+
+import { useAppSelector } from "@/lib/redux/store";
 
 export const Route = createFileRoute("/dashboard/employees/")({
-	loader: async () => await api.getEmployees(),
-	pendingComponent: DashboardPending,
 	component: EmployeesPage,
 });
 
 function EmployeesPage() {
-	const initialEmployees = Route.useLoaderData();
+	const { activeCompanyId } = useAppSelector((state) => state.auth);
+	const {
+		data: employeesData,
+		isLoading,
+		isError,
+	} = useGetEmployeesQuery(
+		activeCompanyId ? { companyId: activeCompanyId } : undefined,
+	);
+	const [deleteEmployee] = useDeleteEmployeeMutation();
 	const navigate = useNavigate();
+
+	const initialEmployees = employeesData?.items || [];
+
 	const {
 		searchTerm,
 		setSearchTerm,
@@ -88,13 +103,20 @@ function EmployeesPage() {
 
 	const handleTerminate = async (id: string, name: string) => {
 		try {
-			await api.deleteEmployee(id);
+			await deleteEmployee(id).unwrap();
 			toast.success(`Contract for ${name} has been formally terminated`);
-			window.location.reload();
 		} catch (_err) {
 			toast.error("Failed to process termination");
 		}
 	};
+
+	if (isLoading) return <DashboardPending />;
+	if (isError)
+		return (
+			<ErrorComponent
+				error={new Error("The employee directory could not be loaded.")}
+			/>
+		);
 
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden bg-muted/20">
@@ -324,19 +346,15 @@ function EmployeesPage() {
 													<TableCell className="pr-8 py-3 text-right">
 														<div className="flex items-center justify-end">
 															<DropdownMenu>
-																<DropdownMenuTrigger
-																	render={
-																		<Button
-																			variant="ghost"
-																			size="icon-sm"
-																			aria-label="Employee actions"
-																		>
-																			<HugeiconsIcon
-																				icon={MoreHorizontalIcon}
-																			/>
-																		</Button>
-																	}
-																/>
+																<DropdownMenuTrigger>
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		aria-label="Employee actions"
+																	>
+																		<HugeiconsIcon icon={MoreHorizontalIcon} />
+																	</Button>
+																</DropdownMenuTrigger>
 																<DropdownMenuContent
 																	align="end"
 																	className="w-52 rounded-2xl border-border/40 shadow-2xl p-2"
@@ -365,20 +383,18 @@ function EmployeesPage() {
 																	</DropdownMenuItem>
 																	<DropdownMenuSeparator className="bg-border/5 my-1" />
 																	<AlertDialog>
-																		<AlertDialogTrigger
-																			render={
-																				<DropdownMenuItem
-																					onSelect={(e) => e.preventDefault()}
-																					className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
-																				>
-																					<HugeiconsIcon
-																						icon={Delete02Icon}
-																						className="size-4 mr-3"
-																					/>
-																					<span>Terminate</span>
-																				</DropdownMenuItem>
-																			}
-																		/>
+																		<AlertDialogTrigger>
+																			<DropdownMenuItem
+																				onSelect={(e) => e.preventDefault()}
+																				className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
+																			>
+																				<HugeiconsIcon
+																					icon={Delete02Icon}
+																					className="size-4 mr-3"
+																				/>
+																				<span>Terminate</span>
+																			</DropdownMenuItem>
+																		</AlertDialogTrigger>
 																		<AlertDialogContent>
 																			<AlertDialogHeader>
 																				<AlertDialogTitle>

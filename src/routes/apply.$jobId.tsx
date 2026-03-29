@@ -275,7 +275,10 @@ function ApplyForJobPage() {
 													{section.items && section.items.length > 0 && (
 														<ul className="space-y-1.5">
 															{section.items.map((item, i) => (
-																<li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+																<li
+																	key={i}
+																	className="flex items-start gap-2 text-sm text-muted-foreground"
+																>
 																	<span className="mt-1.5 size-1.5 rounded-full bg-primary/40 shrink-0" />
 																	{item.content}
 																</li>

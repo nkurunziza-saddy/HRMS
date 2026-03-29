@@ -92,10 +92,10 @@ function FrameFooter({ className, ...props }: React.ComponentProps<"footer">) {
 
 export {
 	Frame,
-	FramePanel,
-	FrameHeader,
-	FrameTitle,
-	FrameDescription,
 	FrameContent,
+	FrameDescription,
 	FrameFooter,
+	FrameHeader,
+	FramePanel,
+	FrameTitle,
 };

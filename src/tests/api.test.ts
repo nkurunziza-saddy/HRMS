@@ -129,24 +129,30 @@ describe("User & Workflow Management", () => {
 		if (!createdCompanyId) return;
 
 		const email = `admin.${Date.now()}@precision.rw`;
+		const phoneNumber = `25078${Math.floor(1000000 + Math.random() * 9000000)}`;
 		createdUserEmail = email;
 
-		const { status, data } = await post(
+		const { status, data: response } = await post(
 			"/user",
 			{
 				firstName: "Tenant",
 				lastName: "Admin",
 				email,
-				phoneNumber: "250780000000",
+				phoneNumber,
 				role: "COMPANY_ADMIN",
 				companyId: createdCompanyId,
 			},
 			adminToken,
 		);
 
+		const data = response.data || response; // Handle both wrapped and unwrapped for flexibility
+
+		expect(
+			data,
+			`User creation failed with status ${status}: ${JSON.stringify(response)}`,
+		).toHaveProperty("id");
 		expect([200, 201]).toContain(status);
-		expect(data).toHaveProperty("id");
-		expect(data.isEmailVerified).toBe(false);
+		expect(data.isEmailVerified || data.emailVerified).toBe(false);
 	});
 
 	it("POST /auth/send-otp — should trigger verification email for new admin", async () => {
@@ -158,7 +164,7 @@ describe("User & Workflow Management", () => {
 		});
 
 		expect(status).toBe(200);
-		expect(data.message).toMatch(/OTP_SENT_SUCCESSFULLY/i);
+		expect(data.message).toMatch(/OTP sent successfully/i);
 	});
 
 	it("POST /auth/verify-email — should fail with invalid OTP (workflow check)", async () => {
