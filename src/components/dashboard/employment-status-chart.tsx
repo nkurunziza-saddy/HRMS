@@ -19,7 +19,8 @@ import {
 	FrameTitle,
 } from "@/components/ui/frame";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { api } from "@/lib/mock-api";
+import { useGetEmployeesQuery } from "@/lib/redux/api/employee";
+import { useAppSelector } from "@/lib/redux/store";
 import { cn } from "@/lib/utils";
 
 const chartConfig = {
@@ -34,10 +35,6 @@ const chartConfig = {
 		label: "Probation",
 		color: "var(--chart-2)",
 	},
-	pending: {
-		label: "Pending",
-		color: "var(--chart-3)",
-	},
 	resigned: {
 		label: "Resigned",
 		color: "var(--chart-4)",
@@ -50,65 +47,91 @@ const chartConfig = {
 
 export const EmploymentStatusChart = React.memo(
 	function EmploymentStatusChart() {
-		const [selected, setSelected] = React.useState<string>("Active");
-		const [chartData, setChartData] = React.useState<any[]>([]);
+		const { activeCompanyId } = useAppSelector((state) => state.auth);
+		const { data: employeesData, isLoading } = useGetEmployeesQuery(
+			activeCompanyId ? { companyId: activeCompanyId } : undefined,
+			{ skip: !activeCompanyId },
+		);
 
-		React.useEffect(() => {
-			async function loadData() {
-				// In a real app we would aggregate from api.getEmployees()
-				const emps = await api.getEmployees();
-				const summary = {
-					Active: 0,
-					Probation: 0,
-					Pending: 0,
-					Resigned: 0,
-					Terminated: 0,
-				};
+		const [selected, setSelected] = React.useState<string>("active");
 
-				emps.forEach((e) => {
-					const s = e.status.charAt(0).toUpperCase() + e.status.slice(1);
-					if (s in summary) {
-						summary[s as keyof typeof summary]++;
-					}
-				});
+		const chartData = React.useMemo(() => {
+			if (!employeesData?.items) return [];
 
-				// Make the mock data look a bit more realistic (scale it up for the dash)
-				setChartData([
-					{
-						type: "Active",
-						employees: summary.Active * 30 + 120,
-						fill: "var(--color-active)",
-					},
-					{
-						type: "Probation",
-						employees: summary.Probation * 15 + 18,
-						fill: "var(--color-probation)",
-					},
-					{
-						type: "Pending",
-						employees: summary.Pending * 5 + 4,
-						fill: "var(--color-pending)",
-					},
-					{
-						type: "Resigned",
-						employees: summary.Resigned * 8 + 12,
-						fill: "var(--color-resigned)",
-					},
-					{
-						type: "Terminated",
-						employees: summary.Terminated * 4 + 3,
-						fill: "var(--color-terminated)",
-					},
-				]);
-			}
-			loadData();
-		}, []);
+			const summary: Record<string, number> = {
+				active: 0,
+				probation: 0,
+				resigned: 0,
+				terminated: 0,
+			};
+
+			employeesData.items.forEach((e) => {
+				const s = (e.status || "active").toLowerCase();
+				if (s in summary) {
+					summary[s]++;
+				}
+			});
+
+			return [
+				{
+					type: "active",
+					employees: summary.active,
+					fill: "var(--color-active)",
+				},
+				{
+					type: "probation",
+					employees: summary.probation,
+					fill: "var(--color-probation)",
+				},
+				{
+					type: "resigned",
+					employees: summary.resigned,
+					fill: "var(--color-resigned)",
+				},
+				{
+					type: "terminated",
+					employees: summary.terminated,
+					fill: "var(--color-terminated)",
+				},
+			].filter((d) => d.employees > 0 || d.type === "active");
+		}, [employeesData]);
 
 		const totalEmployees = React.useMemo(() => {
 			return chartData.reduce((acc, curr) => acc + curr.employees, 0);
 		}, [chartData]);
 
-		if (!chartData.length) return null;
+		if (isLoading) {
+			return (
+				<Frame className="h-full group/frame">
+					<FramePanel className="flex flex-col h-full overflow-hidden">
+						<FrameHeader className="flex-col items-start gap-4">
+							<div className="space-y-1">
+								<FrameTitle>Employment Status</FrameTitle>
+								<FrameDescription>Loading engagement data...</FrameDescription>
+							</div>
+						</FrameHeader>
+						<FrameContent className="flex-1 flex items-center justify-center">
+							<div className="size-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+						</FrameContent>
+					</FramePanel>
+				</Frame>
+			);
+		}
+
+		if (!chartData.length) {
+			return (
+				<Frame className="h-full group/frame">
+					<FramePanel className="flex flex-col h-full overflow-hidden">
+						<FrameHeader>
+							<FrameTitle>Employment Status</FrameTitle>
+						</FrameHeader>
+						<FrameContent className="flex-1 flex items-center justify-center text-center p-6">
+							<p className="text-sm text-muted-foreground">No employee data available for this company.</p>
+						</FrameContent>
+					</FramePanel>
+				</Frame>
+			);
+		}
 
 		return (
 			<Frame className="h-full group/frame">
@@ -127,7 +150,7 @@ export const EmploymentStatusChart = React.memo(
 							variant="outline"
 							className="h-8 shadow-none w-full bg-muted/20 border-border/5 p-0.5"
 						>
-							{chartData.slice(0, 3).map((d) => (
+							{chartData.slice(0, 4).map((d) => (
 								<ToggleGroupItem
 									key={d.type}
 									value={d.type}
@@ -139,10 +162,10 @@ export const EmploymentStatusChart = React.memo(
 						</ToggleGroup>
 					</FrameHeader>
 
-					<FrameContent className="flex-1 flex flex-col items-center justify-center py-8">
+					<FrameContent className="flex-1 flex flex-col items-center justify-center py-8 min-h-[320px]">
 						<ChartContainer
 							config={chartConfig}
-							className="mx-auto aspect-square max-h-[220px] w-full"
+							className="mx-auto aspect-square max-h-[250px] w-full"
 						>
 							<PieChart>
 								<ChartTooltip
@@ -164,7 +187,6 @@ export const EmploymentStatusChart = React.memo(
 										}
 									}}
 								>
-									{" "}
 									{chartData.map((entry, index) => (
 										<Cell
 											key={`cell-${index}`}
@@ -192,7 +214,7 @@ export const EmploymentStatusChart = React.memo(
 															className="fill-foreground text-3xl font-light tracking-tight tabular-nums"
 														>
 															{(
-																selectedData?.employees || totalEmployees
+																selectedData?.employees ?? totalEmployees
 															).toLocaleString()}
 														</tspan>
 														<tspan

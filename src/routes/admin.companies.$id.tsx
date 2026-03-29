@@ -283,14 +283,16 @@ function CompanyDetailsPage() {
 											</FrameDescription>
 										</div>
 										<Dialog open={showAddAdmin} onOpenChange={setShowAddAdmin}>
-											<DialogTrigger>
-												<Button
-													size="sm"
-													className="text-xs font-bold gap-2 uppercase tracking-widest"
-												>
-													<HugeiconsIcon icon={PlusSignIcon} size={14} /> Add
-													Admin
-												</Button>
+											<DialogTrigger
+												render={
+													<Button
+														size="sm"
+														className="text-xs font-bold gap-2 uppercase tracking-widest"
+													/>
+												}
+											>
+												<HugeiconsIcon icon={PlusSignIcon} size={14} /> Add
+												Admin
 											</DialogTrigger>
 											<DialogContent>
 												<Form {...form}>
@@ -466,17 +468,19 @@ function CompanyDetailsPage() {
 															</TableCell>
 															<TableCell className="text-right pr-6 py-4">
 																<AlertDialog>
-																	<AlertDialogTrigger>
-																		<Button
-																			variant="ghost"
-																			size="icon-sm"
-																			className="text-destructive/40 hover:text-destructive hover:bg-destructive/5"
-																		>
-																			<HugeiconsIcon
-																				icon={Delete01Icon}
-																				size={16}
+																	<AlertDialogTrigger
+																		render={
+																			<Button
+																				variant="ghost"
+																				size="icon-sm"
+																				className="text-destructive/40 hover:text-destructive hover:bg-destructive/5"
 																			/>
-																		</Button>
+																		}
+																	>
+																		<HugeiconsIcon
+																			icon={Delete01Icon}
+																			size={16}
+																		/>
 																	</AlertDialogTrigger>
 																	<AlertDialogContent>
 																		<AlertDialogHeader>

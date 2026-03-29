@@ -72,7 +72,7 @@ function DepartmentsPage() {
 		isLoading,
 		isError,
 	} = useGetCompanyDepartmentsQuery(
-		{ companyId: activeCompanyId || "" },
+		activeCompanyId ? { companyId: activeCompanyId } : undefined,
 		{ skip: !activeCompanyId },
 	);
 	const { data: referencesData } = useGetDepartmentReferencesQuery(undefined);
@@ -96,11 +96,17 @@ function DepartmentsPage() {
 
 	const departments = departmentsData?.items || [];
 
-	const filteredDepts = departments.filter(
-		(d) =>
-			d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			d.description.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
+	const filteredDepts = departments.filter((d) => {
+		const search = searchTerm.toLowerCase().trim();
+		if (!search) return true;
+		
+		// Search in all available fields to ensure nothing is hidden
+		const name = (d.name || "").toLowerCase();
+		const description = (d.description || "").toLowerCase();
+		const status = (d.status || "").toLowerCase();
+		
+		return name.includes(search) || description.includes(search) || status.includes(search);
+	});
 
 	const handleAddDepartment = async () => {
 		if (!newDept.name || !newDept.departmentReferenceId || !activeCompanyId)
@@ -116,9 +122,14 @@ function DepartmentsPage() {
 			setIsDialogOpen(false);
 			setNewDept({ name: "", description: "", departmentReferenceId: "" });
 			toast.success("Department created successfully");
-		} catch (err) {
+		} catch (err: any) {
 			console.error(err);
-			toast.error("Failed to create department");
+			const errorMessage = err?.data?.message || "";
+			if (errorMessage.includes("duplicate key") || err?.status === 409) {
+				toast.error("This department or reference is already registered for this company.");
+			} else {
+				toast.error(err?.data?.message || "Failed to create department");
+			}
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -152,14 +163,20 @@ function DepartmentsPage() {
 			<DashboardHeader
 				category="Organization"
 				title="Departments"
-				description="Manage company structure and departmental divisions."
+				description={
+					departments.length > 0 
+						? `Managing ${departments.length} departments for this organization.`
+						: "Create and organize your company divisions."
+				}
 			>
 				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-					<DialogTrigger>
-						<Button>
-							<HugeiconsIcon icon={PlusSignCircleIcon} />
-							Add Department
-						</Button>
+					<DialogTrigger
+						render={
+							<Button />
+						}
+					>
+						<HugeiconsIcon icon={PlusSignCircleIcon} />
+						Add Department
 					</DialogTrigger>
 					<DialogContent className="sm:max-w-[425px]">
 						<DialogHeader>
@@ -215,10 +232,12 @@ function DepartmentsPage() {
 										open={isReferenceDialogOpen}
 										onOpenChange={setIsReferenceDialogOpen}
 									>
-										<AlertDialogTrigger>
-											<Button variant="ghost" size="sm" className="px-2">
-												Create new
-											</Button>
+										<AlertDialogTrigger
+											render={
+												<Button variant="ghost" size="sm" className="px-2" />
+											}
+										>
+											Create new
 										</AlertDialogTrigger>
 										<AlertDialogContent>
 											<AlertDialogHeader>
@@ -333,17 +352,19 @@ function DepartmentsPage() {
 									</Badge>
 								</div>
 								<DropdownMenu>
-									<DropdownMenuTrigger>
-										<Button
-											variant="ghost"
-											size="icon-sm"
-											className="opacity-0 group-hover:opacity-100 transition-opacity"
-										>
-											<HugeiconsIcon
-												icon={MoreHorizontalIcon}
-												className="size-4"
+									<DropdownMenuTrigger
+										render={
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												className="opacity-0 group-hover:opacity-100 transition-opacity"
 											/>
-										</Button>
+										}
+									>
+										<HugeiconsIcon
+											icon={MoreHorizontalIcon}
+											className="size-4"
+										/>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">
 										<DropdownMenuItem>

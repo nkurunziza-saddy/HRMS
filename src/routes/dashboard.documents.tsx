@@ -48,11 +48,14 @@ function DocumentsPage() {
 	const documents = Route.useLoaderData();
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const filtered = documents.filter(
-		(doc) =>
-			doc.fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			doc.employeeName.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
+	const filtered = documents.filter((doc) => {
+		const fileName = doc.fileName || "";
+		const employeeName = doc.employeeName || "";
+		return (
+			fileName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			employeeName.toLowerCase().includes(searchTerm.toLowerCase())
+		);
+	});
 
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden">

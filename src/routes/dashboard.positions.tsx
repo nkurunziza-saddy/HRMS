@@ -161,11 +161,13 @@ function PositionsPage() {
 					description="Manage job titles and roles within the organization."
 				>
 					<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-						<DialogTrigger>
-							<Button>
-								<HugeiconsIcon icon={PlusSignCircleIcon} />
-								Add Position
-							</Button>
+						<DialogTrigger
+							render={
+								<Button />
+							}
+						>
+							<HugeiconsIcon icon={PlusSignCircleIcon} />
+							Add Position
 						</DialogTrigger>
 						<DialogContent className="sm:max-w-106.25">
 							<DialogHeader>
@@ -297,17 +299,19 @@ function PositionsPage() {
 										</Badge>
 									</div>
 									<DropdownMenu>
-										<DropdownMenuTrigger>
-											<Button
-												variant="ghost"
-												size="icon-sm"
-												className="opacity-0 group-hover:opacity-100 transition-opacity"
-											>
-												<HugeiconsIcon
-													icon={MoreHorizontalIcon}
-													className="size-4"
+										<DropdownMenuTrigger
+											render={
+												<Button
+													variant="ghost"
+													size="icon-sm"
+													className="opacity-0 group-hover:opacity-100 transition-opacity"
 												/>
-											</Button>
+											}
+										>
+											<HugeiconsIcon
+												icon={MoreHorizontalIcon}
+												className="size-4"
+											/>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
 											<DropdownMenuItem

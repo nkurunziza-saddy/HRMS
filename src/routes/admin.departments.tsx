@@ -52,9 +52,10 @@ function AdminDepartmentsPage() {
 	if (isError) return <div>Error loading department references.</div>;
 
 	const references = data?.items || [];
-	const filtered = references.filter((ref) =>
-		ref.name.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
+	const filtered = references.filter((ref) => {
+		const name = ref.name || "";
+		return name.toLowerCase().includes(searchTerm.toLowerCase());
+	});
 
 	const handleCreate = async () => {
 		if (!newName) return;

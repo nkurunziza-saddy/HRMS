@@ -9,7 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardPending } from "@/components/dashboard/dashboard-pending";
@@ -63,13 +63,19 @@ function OnboardEmployeePage() {
 	const search = Route.useSearch();
 	const navigate = useNavigate();
 	const { activeCompanyId } = useAppSelector((state) => state.auth);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [activeDocKey, setActiveDocKey] = useState<string | null>(null);
 
 	const { data: departmentsData, isLoading: isLoadingDepts } =
 		useGetCompanyDepartmentsQuery(
 			activeCompanyId ? { companyId: activeCompanyId } : undefined,
+			{ skip: !activeCompanyId },
 		);
 	const { data: jobTitlesData, isLoading: isLoadingTitles } =
-		useGetJobTitlesQuery(undefined);
+		useGetJobTitlesQuery(
+			activeCompanyId ? { companyId: activeCompanyId } : undefined,
+			{ skip: !activeCompanyId },
+		);
 	const [onboardEmployee] = useOnboardEmployeeMutation();
 
 	const [step, setStep] = useState(1);
@@ -79,23 +85,40 @@ function OnboardEmployeePage() {
 	const [formData, setFormData] = useState({
 		firstName: search.firstName || "",
 		lastName: search.lastName || "",
-		idNumber: "",
-		phone: search.phone || "",
+		documentNumber: "",
+		phoneNumber: search.phone || "",
 		email: search.email || "",
+		gender: "MALE",
 		departmentId: "",
 		jobTitleId: "",
-		manager: "",
-		hireDate: new Date().toISOString().split("T")[0],
-		// files status
-		cv: false,
-		idCopy: false,
-		contract: false,
-		criminalRecord: false,
-		medicalReport: false,
+		startDate: new Date().toISOString().split("T")[0],
+		endDate: "",
+		// files
+		cv: null as File | null,
+		nationalId: null as File | null,
+		passport: null as File | null,
+		degree: null as File | null,
+		certificate: null as File | null,
+		medicalCertificate: null as File | null,
+		employmentContract: null as File | null,
+		other: null as File | null,
 	});
 
 	const departments = departmentsData?.items || [];
 	const jobTitles = jobTitlesData?.items || [];
+
+	const handleFileClick = (key: string) => {
+		setActiveDocKey(key);
+		fileInputRef.current?.click();
+	};
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (file && activeDocKey) {
+			setFormData((prev) => ({ ...prev, [activeDocKey]: file }));
+		}
+		e.target.value = ""; // Reset for next selection
+	};
 
 	const handleSubmit = async () => {
 		if (!activeCompanyId) {
@@ -104,22 +127,29 @@ function OnboardEmployeePage() {
 		}
 
 		setIsSubmitting(true);
+		const data = new FormData();
+		data.append("firstName", formData.firstName);
+		data.append("lastName", formData.lastName);
+		data.append("email", formData.email);
+		data.append("phoneNumber", formData.phoneNumber);
+		data.append("documentNumber", formData.documentNumber);
+		data.append("gender", formData.gender);
+		data.append("departmentId", formData.departmentId);
+		data.append("jobTitleId", formData.jobTitleId);
+		if (formData.startDate) data.append("startDate", formData.startDate);
+		if (formData.endDate) data.append("endDate", formData.endDate);
+
+		// Append files
+		const fileKeys = ["cv", "nationalId", "passport", "degree", "certificate", "medicalCertificate", "employmentContract", "other"];
+		fileKeys.forEach(key => {
+			const file = (formData as any)[key];
+			if (file instanceof File) {
+				data.append(key, file);
+			}
+		});
+
 		try {
-			await onboardEmployee({
-				firstName: formData.firstName,
-				lastName: formData.lastName,
-				idNumber: formData.idNumber,
-				email: formData.email,
-				phone: formData.phone,
-				departmentId: formData.departmentId,
-				jobTitleId: formData.jobTitleId,
-				manager: formData.manager,
-				hireDate: formData.hireDate,
-				companyId: activeCompanyId,
-				status: "probation" as any,
-				complianceStatus: "compliant" as any,
-				onboardingProgress: 100,
-			}).unwrap();
+			await onboardEmployee(data).unwrap();
 			setIsSuccess(true);
 			toast.success("Employee onboarded successfully");
 		} catch (err: any) {
@@ -200,10 +230,17 @@ function OnboardEmployeePage() {
 					variant="outline"
 					onClick={() => navigate({ to: "/dashboard/employees" })}
 				>
-					<HugeiconsIcon icon={ArrowLeft01Icon} />
+					<HugeiconsIcon icon={ArrowLeft01Icon} size={14} />
 					Abort
 				</Button>
 			</DashboardHeader>
+
+			<input
+				type="file"
+				ref={fileInputRef}
+				className="hidden"
+				onChange={handleFileChange}
+			/>
 
 			<div className="flex-1 overflow-y-auto no-scrollbar px-6 lg:px-8 pb-20 pt-2">
 				<div className="max-w-3xl w-full">
@@ -283,22 +320,46 @@ function OnboardEmployeePage() {
 												/>
 											</div>
 										</div>
-										<div className="space-y-2">
-											<Label
-												htmlFor="idNumber"
-												className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
-											>
-												National ID / Passport
-											</Label>
-											<Input
-												id="idNumber"
-												placeholder="e.g. 11985..."
-												className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors"
-												value={formData.idNumber}
-												onChange={(e) =>
-													setFormData({ ...formData, idNumber: e.target.value })
-												}
-											/>
+										<div className="grid grid-cols-2 gap-6">
+											<div className="space-y-2">
+												<Label
+													htmlFor="documentNumber"
+													className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
+												>
+													National ID / Passport
+												</Label>
+												<Input
+													id="documentNumber"
+													placeholder="e.g. 11985..."
+													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors"
+													value={formData.documentNumber}
+													onChange={(e) =>
+														setFormData({ ...formData, documentNumber: e.target.value })
+													}
+												/>
+											</div>
+											<div className="space-y-2">
+												<Label
+													htmlFor="gender"
+													className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
+												>
+													Gender
+												</Label>
+												<Select
+													value={formData.gender}
+													onValueChange={(val) =>
+														setFormData({ ...formData, gender: val || "MALE" })
+													}
+												>
+													<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background">
+														<SelectValue placeholder="Select Gender" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="MALE">Male</SelectItem>
+														<SelectItem value="FEMALE">Female</SelectItem>
+													</SelectContent>
+												</Select>
+											</div>
 										</div>
 										<div className="grid grid-cols-2 gap-6">
 											<div className="space-y-2">
@@ -328,11 +389,11 @@ function OnboardEmployeePage() {
 												</Label>
 												<Input
 													id="phone"
-													placeholder="+250..."
+													placeholder="250..."
 													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors"
-													value={formData.phone}
+													value={formData.phoneNumber}
 													onChange={(e) =>
-														setFormData({ ...formData, phone: e.target.value })
+														setFormData({ ...formData, phoneNumber: e.target.value })
 													}
 												/>
 											</div>
@@ -360,11 +421,21 @@ function OnboardEmployeePage() {
 														<SelectValue placeholder="Select Department" />
 													</SelectTrigger>
 													<SelectContent>
-														{departments.map((d: any) => (
-															<SelectItem key={d.id} value={d.id}>
-																{d.name}
+														{isLoadingDepts ? (
+															<SelectItem value="loading" disabled>
+																Loading departments...
 															</SelectItem>
-														))}
+														) : departments.length > 0 ? (
+															departments.map((d: any) => (
+																<SelectItem key={d.id} value={d.id}>
+																	{d.name}
+																</SelectItem>
+															))
+														) : (
+															<SelectItem value="none" disabled>
+																No departments found
+															</SelectItem>
+														)}
 													</SelectContent>
 												</Select>
 											</div>
@@ -385,17 +456,27 @@ function OnboardEmployeePage() {
 														<SelectValue placeholder="Select Position" />
 													</SelectTrigger>
 													<SelectContent>
-														{jobTitles
-															.filter(
-																(j: any) =>
-																	!formData.departmentId ||
-																	j.departmentId === formData.departmentId,
-															)
-															.map((j: any) => (
-																<SelectItem key={j.id} value={j.id}>
-																	{j.name || j.title}
-																</SelectItem>
-															))}
+														{isLoadingTitles ? (
+															<SelectItem value="loading" disabled>
+																Loading positions...
+															</SelectItem>
+														) : jobTitles.length > 0 ? (
+															jobTitles
+																.filter(
+																	(j: any) =>
+																		!formData.departmentId ||
+																		j.departmentId === formData.departmentId,
+																)
+																.map((j: any) => (
+																	<SelectItem key={j.id} value={j.id}>
+																		{j.name || j.title}
+																	</SelectItem>
+																))
+														) : (
+															<SelectItem value="none" disabled>
+																No positions found
+															</SelectItem>
+														)}
 													</SelectContent>
 												</Select>
 											</div>
@@ -403,40 +484,40 @@ function OnboardEmployeePage() {
 										<div className="grid grid-cols-2 gap-6">
 											<div className="space-y-2">
 												<Label
-													htmlFor="manager"
+													htmlFor="startDate"
 													className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
 												>
-													Direct Manager
+													Effective Start Date
 												</Label>
 												<Input
-													id="manager"
-													placeholder="Manager Name"
-													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors"
-													value={formData.manager}
+													id="startDate"
+													type="date"
+													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors font-semibold"
+													value={formData.startDate}
 													onChange={(e) =>
 														setFormData({
 															...formData,
-															manager: e.target.value,
+															startDate: e.target.value,
 														})
 													}
 												/>
 											</div>
 											<div className="space-y-2">
 												<Label
-													htmlFor="hireDate"
+													htmlFor="endDate"
 													className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
 												>
-													Effective Start Date
+													End Date (Optional)
 												</Label>
 												<Input
-													id="hireDate"
+													id="endDate"
 													type="date"
-													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors"
-													value={formData.hireDate}
+													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors font-semibold"
+													value={formData.endDate}
 													onChange={(e) =>
 														setFormData({
 															...formData,
-															hireDate: e.target.value,
+															endDate: e.target.value,
 														})
 													}
 												/>
@@ -449,13 +530,13 @@ function OnboardEmployeePage() {
 									<div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
 										{[
 											{ key: "cv", label: "Curriculum Vitae (CV)" },
-											{ key: "idCopy", label: "Identity Document (ID)" },
-											{ key: "contract", label: "Signed Employment Contract" },
-											{
-												key: "criminalRecord",
-												label: "Criminal Record Certificate",
-											},
-											{ key: "medicalReport", label: "Medical Fitness Report" },
+											{ key: "nationalId", label: "National ID Scan" },
+											{ key: "passport", label: "Passport Scan" },
+											{ key: "degree", label: "Academic Degree" },
+											{ key: "certificate", label: "Professional Certificate" },
+											{ key: "medicalCertificate", label: "Medical Certificate" },
+											{ key: "employmentContract", label: "Signed Employment Contract" },
+											{ key: "other", label: "Other Relevant Document" },
 										].map((doc) => (
 											<div
 												key={doc.key}
@@ -479,33 +560,28 @@ function OnboardEmployeePage() {
 															<HugeiconsIcon icon={FileUploadIcon} size={20} />
 														)}
 													</div>
-													<div>
-														<p className="font-bold text-sm text-foreground/90">
+													<div className="min-w-0 flex-1">
+														<p className="font-bold text-sm text-foreground/90 truncate">
 															{doc.label}
 														</p>
 														<p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-															Compliance Required
+															{(formData as any)[doc.key] ? (formData as any)[doc.key].name : "Required attachment"}
 														</p>
 													</div>
 												</div>
 												<Button
 													variant="ghost"
 													size="sm"
-													onClick={() =>
-														setFormData({
-															...formData,
-															[doc.key]: !(formData as any)[doc.key],
-														})
-													}
+													onClick={() => handleFileClick(doc.key)}
 													className={cn(
-														"font-bold h-8 text-xs",
+														"font-bold h-8 text-xs shrink-0",
 														(formData as any)[doc.key]
 															? "text-primary hover:bg-primary/5"
 															: "text-muted-foreground hover:bg-muted/10",
 													)}
 												>
 													{(formData as any)[doc.key]
-														? "Document Ready"
+														? "Replace"
 														: "Upload"}
 												</Button>
 											</div>
@@ -529,18 +605,19 @@ function OnboardEmployeePage() {
 											(step === 1 &&
 												(!formData.firstName ||
 													!formData.lastName ||
-													!formData.email)) ||
+													!formData.email ||
+													!formData.documentNumber)) ||
 											(step === 2 &&
 												(!formData.departmentId || !formData.jobTitleId))
 										}
 									>
 										Next Stage
-										<HugeiconsIcon icon={ArrowRight01Icon} />
+										<HugeiconsIcon icon={ArrowRight01Icon} size={14} />
 									</Button>
 								) : (
 									<Button onClick={handleSubmit} disabled={isSubmitting}>
 										{isSubmitting ? "Inducting..." : "Finalize Onboarding"}
-										<HugeiconsIcon icon={CheckmarkCircle01Icon} />
+										<HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} />
 									</Button>
 								)}
 							</FrameFooter>

@@ -44,11 +44,14 @@ function SystemLogsPage() {
 	const logs = Route.useLoaderData();
 	const [searchTerm, setSearchTerm] = useState("");
 
-	const filtered = logs.filter(
-		(log) =>
-			log.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			log.actor.toLowerCase().includes(searchTerm.toLowerCase()),
-	);
+	const filtered = logs.filter((log) => {
+		const event = log.event || "";
+		const actor = log.actor || "";
+		return (
+			event.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			actor.toLowerCase().includes(searchTerm.toLowerCase())
+		);
+	});
 
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden">

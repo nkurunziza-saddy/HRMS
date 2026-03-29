@@ -275,10 +275,12 @@ function CompaniesManagementPage() {
 																Details
 															</Button>
 															<DropdownMenu>
-																<DropdownMenuTrigger>
-																	<Button variant="ghost" size="icon-sm">
-																		<HugeiconsIcon icon={MoreHorizontalIcon} />
-																	</Button>
+																<DropdownMenuTrigger
+																	render={
+																		<Button variant="ghost" size="icon-sm" />
+																	}
+																>
+																	<HugeiconsIcon icon={MoreHorizontalIcon} />
 																</DropdownMenuTrigger>
 																<DropdownMenuContent
 																	align="end"

@@ -31,7 +31,7 @@ export function UserAvatar({
 	status,
 	className,
 }: UserAvatarProps) {
-	const initials = name
+	const initials = (name || "??")
 		.split(" ")
 		.map((n) => n[0])
 		.join("")

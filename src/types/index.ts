@@ -332,31 +332,34 @@ export interface ChangeApplicantStatusRequest {
 	comment?: string;
 }
 
+export interface ApplicantHistory {
+	doneAt: string;
+	status: ApplicantStatus;
+	comment: string;
+	doneById: string;
+	doneByName: string;
+}
+
 export interface Applicant {
 	id: string;
-	firstName?: string;
-	lastName?: string;
-	email?: string;
-	phone?: string;
-	phoneNumber?: string; // added for consistency with CreateApplicantRequest
-	image?: string;
-	jobPostId?: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	phoneNumber: string;
+	IDNumber: string;
+	gender: "MALE" | "FEMALE";
 	referenceCode: string;
 	status: ApplicantStatus;
 	score?: number;
-	gender?: "MALE" | "FEMALE";
-	documentNumber?: string;
+	image?: string;
+	jobPostId?: string;
+	jobPost?: string; // Title from backend
+	companyName?: string;
 	createdAt: string;
-	appliedAt?: string;
-	history?:
-		| {
-				status: ApplicantStatus;
-				doneBy: string;
-				doneAt: string;
-				comment: string;
-		  }[]
-		| null;
+	updatedAt: string;
+	history: ApplicantHistory[];
 }
+
 export interface LeaveRequest {
 	id: string;
 	employeeId: string;

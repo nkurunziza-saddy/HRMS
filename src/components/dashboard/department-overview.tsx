@@ -14,24 +14,57 @@ import {
 	FramePanel,
 	FrameTitle,
 } from "@/components/ui/frame";
-import { api } from "@/lib/mock-api";
-import type { Department, JobTitle } from "@/types";
+import { useGetCompanyDepartmentsQuery } from "@/lib/redux/api/department";
+import { useGetJobTitlesQuery } from "@/lib/redux/api/job-title";
+import { useAppSelector } from "@/lib/redux/store";
 
 export const DepartmentOverview = React.memo(function DepartmentOverview() {
-	const [departments, setDepartments] = React.useState<Department[]>([]);
-	const [jobTitles, setJobTitles] = React.useState<JobTitle[]>([]);
+	const { activeCompanyId } = useAppSelector((state) => state.auth);
+	const { data: departmentsData, isLoading: isLoadingDepts } =
+		useGetCompanyDepartmentsQuery(
+			activeCompanyId ? { companyId: activeCompanyId } : undefined,
+			{ skip: !activeCompanyId },
+		);
+	const { data: jobTitlesData, isLoading: isLoadingJobs } =
+		useGetJobTitlesQuery(undefined);
 
-	React.useEffect(() => {
-		async function loadData() {
-			const depts = await api.getDepartments();
-			const jobs = await api.getJobTitles();
-			setDepartments(depts);
-			setJobTitles(jobs);
-		}
-		loadData();
-	}, []);
+	const departments = departmentsData?.items || [];
+	const jobTitles = jobTitlesData?.items || [];
 
-	if (!departments.length) return null;
+	if (isLoadingDepts || isLoadingJobs) {
+		return (
+			<Frame className="h-full group/frame">
+				<FramePanel className="flex flex-col h-full overflow-hidden">
+					<FrameHeader>
+						<div>
+							<FrameTitle>Department Overview</FrameTitle>
+							<FrameDescription>Loading organizational structure...</FrameDescription>
+						</div>
+					</FrameHeader>
+					<FrameContent className="flex-1 flex items-center justify-center">
+						<div className="size-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+					</FrameContent>
+				</FramePanel>
+			</Frame>
+		);
+	}
+
+	if (!departments.length) {
+		return (
+			<Frame className="h-full group/frame">
+				<FramePanel className="flex flex-col h-full overflow-hidden">
+					<FrameHeader>
+						<div>
+							<FrameTitle>Department Overview</FrameTitle>
+						</div>
+					</FrameHeader>
+					<FrameContent className="flex-1 flex items-center justify-center text-center p-6">
+						<p className="text-sm text-muted-foreground">No departments configured for this company.</p>
+					</FrameContent>
+				</FramePanel>
+			</Frame>
+		);
+	}
 
 	return (
 		<Frame className="h-full group/frame">

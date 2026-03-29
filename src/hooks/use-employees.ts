@@ -11,9 +11,11 @@ export function useEmployees(initialEmployees: Employee[]) {
 
 	const filteredEmployees = useMemo(() => {
 		return initialEmployees.filter((employee) => {
+			const name = employee.name || "";
+			const email = employee.email || "";
 			const matchesSearch =
-				employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				employee.email.toLowerCase().includes(searchTerm.toLowerCase());
+				name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				email.toLowerCase().includes(searchTerm.toLowerCase());
 			const matchesDept =
 				filterDept === "all" || employee.department === filterDept;
 			const matchesStatus =
@@ -23,7 +25,7 @@ export function useEmployees(initialEmployees: Employee[]) {
 	}, [initialEmployees, searchTerm, filterDept, filterStatus]);
 
 	const departments = useMemo(() => {
-		return ["all", ...new Set(initialEmployees.map((u) => u.department))];
+		return ["all", ...new Set(initialEmployees.map((u) => u.department || "General"))];
 	}, [initialEmployees]);
 
 	const statuses = ["all", "active", "probation", "resigned", "terminated"];

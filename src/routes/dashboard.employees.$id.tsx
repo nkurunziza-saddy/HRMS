@@ -182,17 +182,17 @@ function EmployeeProfilePage() {
 												<FrameContent className="space-y-6">
 													<InfoRow
 														label="Employee ID"
-														value={employee.id}
+														value={employee.id || "N/A"}
 														icon={UserGroupIcon}
 													/>
 													<InfoRow
 														label="National ID"
-														value={employee.idNumber}
+														value={employee.idNumber || "N/A"}
 														icon={Shield01Icon}
 													/>
 													<InfoRow
 														label="Official Email"
-														value={employee.email}
+														value={employee.email || "N/A"}
 														icon={Mail01Icon}
 													/>
 													<InfoRow
@@ -217,12 +217,12 @@ function EmployeeProfilePage() {
 												<FrameContent className="space-y-6">
 													<InfoRow
 														label="Department"
-														value={employee.department}
+														value={employee.department || "General"}
 														icon={Building03Icon}
 													/>
 													<InfoRow
 														label="Job Title"
-														value={employee.position}
+														value={employee.position || "Staff"}
 														icon={JobShareIcon}
 													/>
 													<InfoRow
@@ -232,7 +232,7 @@ function EmployeeProfilePage() {
 													/>
 													<InfoRow
 														label="Joined Date"
-														value={employee.hireDate}
+														value={employee.hireDate ? new Date(employee.hireDate).toLocaleDateString() : "N/A"}
 														icon={Calendar01Icon}
 													/>
 												</FrameContent>

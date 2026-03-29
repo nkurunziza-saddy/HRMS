@@ -266,17 +266,17 @@ function EmployeesPage() {
 													<TableCell className="pl-8 py-3">
 														<div className="flex items-center gap-3">
 															<UserAvatar
-																name={user.name}
+																name={user.name || "Employee"}
 																src={user.image}
 																size="default"
 																className="h-10 w-10 rounded-xl"
 															/>
 															<div className="flex flex-col gap-0.5">
 																<span className="text-sm font-bold text-foreground/90 group-hover:text-primary transition-colors">
-																	{user.name}
+																	{user.name || "Employee"}
 																</span>
 																<span className="text-[11px] font-semibold text-muted-foreground/50">
-																	{user.position}
+																	{user.position || "Staff"}
 																</span>
 															</div>
 														</div>
@@ -321,12 +321,12 @@ function EmployeesPage() {
 															<div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground/60">
 																<HugeiconsIcon icon={Mail01Icon} size={12} />
 																<span className="truncate max-w-[160px]">
-																	{user.email}
+																	{user.email || "N/A"}
 																</span>
 															</div>
 															<div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground/60">
 																<HugeiconsIcon icon={CallIcon} size={12} />
-																<span>{user.phone}</span>
+																<span>{user.phone || "N/A"}</span>
 															</div>
 														</div>
 													</TableCell>
@@ -335,26 +335,28 @@ function EmployeesPage() {
 															variant="muted"
 															className="bg-muted/10 border-none font-bold text-[10px] uppercase tracking-widest"
 														>
-															{user.department}
+															{user.department || "General"}
 														</Badge>
 													</TableCell>
 													<TableCell className="px-4 py-3">
 														<span className="text-xs font-bold text-foreground/60 tabular-nums">
-															{user.idNumber.slice(-8)}
+															{(user.idNumber || "00000000").slice(-8)}
 														</span>
 													</TableCell>
 													<TableCell className="pr-8 py-3 text-right">
 														<div className="flex items-center justify-end">
 															<DropdownMenu>
-																<DropdownMenuTrigger>
-																	<Button
-																		variant="ghost"
-																		size="icon-sm"
-																		aria-label="Employee actions"
-																	>
-																		<HugeiconsIcon icon={MoreHorizontalIcon} />
-																	</Button>
-																</DropdownMenuTrigger>
+																<DropdownMenuTrigger
+																	render={
+																		<Button
+																			variant="ghost"
+																			size="icon-sm"
+																			aria-label="Employee actions"
+																		>
+																			<HugeiconsIcon icon={MoreHorizontalIcon} />
+																		</Button>
+																	}
+																/>
 																<DropdownMenuContent
 																	align="end"
 																	className="w-52 rounded-2xl border-border/40 shadow-2xl p-2"
@@ -383,18 +385,20 @@ function EmployeesPage() {
 																	</DropdownMenuItem>
 																	<DropdownMenuSeparator className="bg-border/5 my-1" />
 																	<AlertDialog>
-																		<AlertDialogTrigger>
-																			<DropdownMenuItem
-																				onSelect={(e) => e.preventDefault()}
-																				className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
-																			>
-																				<HugeiconsIcon
-																					icon={Delete02Icon}
-																					className="size-4 mr-3"
-																				/>
-																				<span>Terminate</span>
-																			</DropdownMenuItem>
-																		</AlertDialogTrigger>
+																		<AlertDialogTrigger
+																			render={
+																				<DropdownMenuItem
+																					onSelect={(e) => e.preventDefault()}
+																					className="rounded-xl py-1.5 font-semibold text-sm text-destructive focus:bg-destructive/5"
+																				>
+																					<HugeiconsIcon
+																						icon={Delete02Icon}
+																						className="size-4 mr-3"
+																					/>
+																					<span>Terminate</span>
+																				</DropdownMenuItem>
+																			}
+																		/>
 																		<AlertDialogContent>
 																			<AlertDialogHeader>
 																				<AlertDialogTitle>

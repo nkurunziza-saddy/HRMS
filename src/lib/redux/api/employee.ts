@@ -36,11 +36,11 @@ export const employeeApi = hrmsApi.injectEndpoints({
 			query: (companyId) => `/employee/compliance/${companyId}`,
 			providesTags: [{ type: "Compliance", id: "LATEST" }],
 		}),
-		onboardEmployee: builder.mutation<Employee, Partial<Employee>>({
-			query: (data) => ({
+		onboardEmployee: builder.mutation<Employee, FormData>({
+			query: (formData) => ({
 				url: "/employee",
 				method: "POST",
-				body: data,
+				body: formData,
 			}),
 			invalidatesTags: [{ type: "Employee", id: "LIST" }],
 		}),
