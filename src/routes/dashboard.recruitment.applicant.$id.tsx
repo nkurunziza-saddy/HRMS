@@ -787,33 +787,35 @@ function ApplicantReviewPage() {
             </div>
           </div>
 
-          <DialogFooter className="bg-muted/5 px-6 py-4 border-t border-border/5 flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setTargetStatus(null);
-                setCommentError(false);
-              }}
-              className="font-bold text-xs uppercase tracking-widest"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleStatusChange}
-              disabled={isChangingStatus}
-              className={cn(
-                "font-bold px-6 h-9 rounded-xl flex-1",
-                isRejecting &&
-                  "bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20",
-              )}
-            >
-              {isChangingStatus
-                ? "Saving..."
-                : isRejecting
-                  ? "Confirm Rejection"
-                  : `Move to ${targetStatus ? STAGE_LABELS[targetStatus] : ""}`}
-            </Button>
-          </DialogFooter>
+          <div className="pb-2">
+            <DialogFooter className="bg-muted/5 px-6 border-t border-border/5 flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setTargetStatus(null);
+                  setCommentError(false);
+                }}
+                className="font-bold text-xs uppercase tracking-widest"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleStatusChange}
+                disabled={isChangingStatus}
+                className={cn(
+                  "font-bold px-6 h-9 rounded-xl flex-1",
+                  isRejecting &&
+                    "bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20",
+                )}
+              >
+                {isChangingStatus
+                  ? "Saving..."
+                  : isRejecting
+                    ? "Confirm Rejection"
+                    : `Move to ${targetStatus ? STAGE_LABELS[targetStatus] : ""}`}
+              </Button>
+            </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </main>
