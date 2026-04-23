@@ -10,7 +10,7 @@ export const jobTitleApi = hrmsApi.injectEndpoints({
 	endpoints: (builder) => ({
 		getJobTitles: builder.query<
 			ApiPaginatedResponse<JobTitle>,
-			{ page?: number; limit?: number; companyId?: string } | undefined
+			{ page?: number; limit?: number; companyId?: string; departmentId?: string } | undefined
 		>({
 			query: (params) => ({
 				url: "/job-title",
@@ -18,6 +18,7 @@ export const jobTitleApi = hrmsApi.injectEndpoints({
 					page: params?.page ?? 1,
 					limit: params?.limit ?? 50,
 					companyId: params?.companyId,
+					departmentId: params?.departmentId,
 				},
 			}),
 			providesTags: (result) =>

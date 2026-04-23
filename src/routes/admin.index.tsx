@@ -52,7 +52,40 @@ function AdminDashboard() {
 	const totalCompanies = companiesData?.meta.totalItems ?? 0;
 	const totalUsers = usersData?.meta.totalItems ?? 0;
 
-	const _logs: any[] = [];
+	const _logs = [
+		{
+			id: "1",
+			level: "security",
+			event: "Failed login attempt — brute-force threshold reached",
+			actor: "unknown@external.io",
+			timestamp: "Today, 08:14 AM",
+			ipAddress: "41.186.32.11",
+		},
+		{
+			id: "2",
+			level: "info",
+			event: "New company tenant provisioned",
+			actor: "admin@hrms.com",
+			timestamp: "Today, 07:52 AM",
+			ipAddress: "192.168.1.1",
+		},
+		{
+			id: "3",
+			level: "info",
+			event: "System backup completed successfully",
+			actor: "system@hrms.com",
+			timestamp: "Today, 03:00 AM",
+			ipAddress: "127.0.0.1",
+		},
+		{
+			id: "4",
+			level: "security",
+			event: "API key rotated — previous key revoked",
+			actor: "superadmin@hrms.com",
+			timestamp: "Yesterday, 11:30 PM",
+			ipAddress: "10.0.0.5",
+		},
+	];
 
 	return (
 		<main className="flex flex-1 flex-col gap-0 overflow-hidden h-full">

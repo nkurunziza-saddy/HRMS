@@ -162,10 +162,7 @@ export function AppSidebar({ customNav, ...props }: AppSidebarProps) {
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader className="pt-4 px-2">
         <div className="flex items-center gap-2 px-2 mb-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <Logo className="size-8" />
-          <span className="text-xl font-bold tracking-tighter uppercase leading-none text-foreground group-data-[collapsible=icon]:hidden">
-            HRMS
-          </span>
+          <Logo className="size-20" />
         </div>
         {mounted && sidebarCompanies.length > 0 && (
           <CompanySwitcher companies={sidebarCompanies as any} />

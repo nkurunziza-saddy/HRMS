@@ -29,6 +29,13 @@ import {
 } from "@/components/ui/dialog";
 import { Frame, FramePanel } from "@/components/ui/frame";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -98,6 +105,8 @@ function ApplicantReviewPage() {
   );
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState(false);
+  const [contractTerm, setContractTerm] = useState<"FIXED" | "OPEN_ENDED">("FIXED");
+  const [contractTermError, setContractTermError] = useState(false);
   const [isChangingStatus, setIsChangingStatus] = useState(false);
 
   if (isLoadingApp || isLoadingJob) return <DashboardPending />;
@@ -114,7 +123,11 @@ function ApplicantReviewPage() {
     setTargetStatus(status);
     setComment("");
     setCommentError(false);
+    setContractTerm("FIXED");
+    setContractTermError(false);
   };
+
+  const isOfferTransition = targetStatus === "OFFERED";
 
   const handleStatusChange = async () => {
     if (!targetStatus) return;
@@ -128,6 +141,7 @@ function ApplicantReviewPage() {
         id: applicant.id,
         status: targetStatus,
         comment: comment.trim(),
+        ...(isOfferTransition ? { contractTerm } : {}),
       }).unwrap();
       toast.success(
         targetStatus === "REJECTED"
@@ -611,62 +625,67 @@ function ApplicantReviewPage() {
                             Documents
                           </p>
                           <p className="text-xs text-muted-foreground/40 mt-0.5">
-                            3 verified attachments
+                            {applicant.applicationDocuments?.length ?? 0} attachment{(applicant.applicationDocuments?.length ?? 0) !== 1 ? "s" : ""}
                           </p>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-[10px] font-bold uppercase tracking-widest h-8"
-                        >
-                          <HugeiconsIcon icon={Download01Icon} size={12} />
-                          All
-                        </Button>
                       </div>
                       <div className="divide-y divide-border/5">
-                        {[
-                          {
-                            name: "Curriculum Vitae",
-                            ext: "PDF",
-                            size: "2.4 MB",
-                          },
-                          { name: "Cover Letter", ext: "PDF", size: "480 KB" },
-                          {
-                            name: "Identity Document",
-                            ext: "PDF",
-                            size: "1.1 MB",
-                          },
-                        ].map((doc) => (
-                          <div
-                            key={doc.name}
-                            className="flex items-center justify-between px-5 py-4 hover:bg-muted/5 transition-colors group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
-                                <HugeiconsIcon
-                                  icon={File02Icon}
-                                  size={16}
-                                  className="text-primary/40"
-                                />
-                              </div>
-                              <div>
-                                <p className="text-sm font-bold text-foreground/80">
-                                  {doc.name}
-                                </p>
-                                <p className="text-[9px] text-muted-foreground/30 font-black uppercase tracking-widest mt-0.5">
-                                  {doc.ext} · {doc.size}
-                                </p>
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"
+                        {applicant.applicationDocuments && applicant.applicationDocuments.length > 0 ? (
+                          applicant.applicationDocuments.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className="flex items-center justify-between px-5 py-4 hover:bg-muted/5 transition-colors group"
                             >
-                              Download
-                            </Button>
+                              <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
+                                  <HugeiconsIcon
+                                    icon={File02Icon}
+                                    size={16}
+                                    className="text-primary/40"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-foreground/80">
+                                    {doc.type.replace(/_/g, " ")}
+                                  </p>
+                                  <p className="text-[9px] text-muted-foreground/30 font-black uppercase tracking-widest mt-0.5">
+                                    {doc.phase.replace(/_/g, " ")} · {new Date(doc.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                                  </p>
+                                </div>
+                              </div>
+                              <a
+                                href={doc.url}
+                                download={`${doc.type.toLowerCase()}`}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-[10px] font-bold uppercase tracking-widest gap-1.5"
+                                  asChild
+                                >
+                                  <span>
+                                    <HugeiconsIcon icon={Download01Icon} size={12} />
+                                    Download
+                                  </span>
+                                </Button>
+                              </a>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-12 space-y-3">
+                            <div className="size-10 rounded-2xl bg-muted/5 border border-dashed border-border/20 flex items-center justify-center">
+                              <HugeiconsIcon
+                                icon={File02Icon}
+                                size={18}
+                                className="text-muted-foreground/20"
+                              />
+                            </div>
+                            <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+                              No documents
+                            </p>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </FramePanel>
                   </Frame>
@@ -766,6 +785,35 @@ function ApplicantReviewPage() {
                 </p>
               )}
             </div>
+
+            {isOfferTransition && (
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 flex items-center gap-1">
+                  Contract Type
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={contractTerm}
+                  onValueChange={(v) => {
+                    setContractTerm(v as "FIXED" | "OPEN_ENDED");
+                    setContractTermError(false);
+                  }}
+                >
+                  <SelectTrigger className="h-10 rounded-xl border-border/40 bg-muted/5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FIXED">Fixed Term</SelectItem>
+                    <SelectItem value="OPEN_ENDED">Open Ended</SelectItem>
+                  </SelectContent>
+                </Select>
+                {contractTermError && (
+                  <p className="text-[10px] font-bold text-destructive ml-1">
+                    Contract type is required before extending an offer.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="pb-2">

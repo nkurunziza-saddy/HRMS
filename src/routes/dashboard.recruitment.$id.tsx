@@ -42,6 +42,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Frame, FramePanel } from "@/components/ui/frame";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
   useChangeApplicantStatusMutation,
@@ -134,6 +141,7 @@ function RecruitmentDetailsPage() {
   } | null>(null);
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState(false);
+  const [contractTerm, setContractTerm] = useState<"FIXED" | "OPEN_ENDED">("FIXED");
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [changingJobStatus, setChangingJobStatus] =
     useState<JobPostingStatus | null>(null);
@@ -170,6 +178,7 @@ function RecruitmentDetailsPage() {
     setStatusDialog({ applicantId, name, currentStatus, targetStatus });
     setComment("");
     setCommentError(false);
+    setContractTerm("FIXED");
   };
 
   const handleConfirmStatusChange = async () => {
@@ -184,6 +193,7 @@ function RecruitmentDetailsPage() {
         id: statusDialog.applicantId,
         status: statusDialog.targetStatus,
         comment: comment.trim(),
+        ...(statusDialog.targetStatus === "OFFERED" ? { contractTerm } : {}),
       }).unwrap();
       toast.success(
         statusDialog.targetStatus === "REJECTED"
@@ -873,6 +883,27 @@ function RecruitmentDetailsPage() {
                 </p>
               )}
             </div>
+
+            {statusDialog?.targetStatus === "OFFERED" && (
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 flex items-center gap-1">
+                  Contract Type
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Select
+                  value={contractTerm}
+                  onValueChange={(v) => setContractTerm(v as "FIXED" | "OPEN_ENDED")}
+                >
+                  <SelectTrigger className="h-10 rounded-xl border-border/40 bg-muted/5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FIXED">Fixed Term</SelectItem>
+                    <SelectItem value="OPEN_ENDED">Open Ended</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="bg-muted/5 px-6 py-4 border-t border-border/5 flex gap-2">

@@ -3,7 +3,6 @@ import type { Employee } from "../types";
 
 export function useEmployees(initialEmployees: Employee[]) {
 	const [searchTerm, setSearchTerm] = useState("");
-	const [filterDept, setFilterDept] = useState("all");
 	const [filterStatus, setFilterStatus] = useState("all");
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 	const [currentPage, setCurrentPage] = useState(1);
@@ -11,24 +10,18 @@ export function useEmployees(initialEmployees: Employee[]) {
 
 	const filteredEmployees = useMemo(() => {
 		return initialEmployees.filter((employee) => {
-			const name = employee.name || "";
-			const email = employee.email || "";
+			const fullName = `${employee.firstName} ${employee.lastName}`.toLowerCase();
 			const matchesSearch =
-				name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				email.toLowerCase().includes(searchTerm.toLowerCase());
-			const matchesDept =
-				filterDept === "all" || employee.department === filterDept;
+				fullName.includes(searchTerm.toLowerCase()) ||
+				employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				employee.IDNumber.toLowerCase().includes(searchTerm.toLowerCase());
 			const matchesStatus =
 				filterStatus === "all" || employee.status === filterStatus;
-			return matchesSearch && matchesDept && matchesStatus;
+			return matchesSearch && matchesStatus;
 		});
-	}, [initialEmployees, searchTerm, filterDept, filterStatus]);
+	}, [initialEmployees, searchTerm, filterStatus]);
 
-	const departments = useMemo(() => {
-		return ["all", ...new Set(initialEmployees.map((u) => u.department || "General"))];
-	}, [initialEmployees]);
-
-	const statuses = ["all", "active", "probation", "resigned", "terminated"];
+	const statuses = ["all", "ACTIVE", "INACTIVE", "PROBATION", "RESIGNED", "TERMINATED"];
 
 	const toggleSelectAll = () => {
 		if (
@@ -54,8 +47,6 @@ export function useEmployees(initialEmployees: Employee[]) {
 	return {
 		searchTerm,
 		setSearchTerm,
-		filterDept,
-		setFilterDept,
 		filterStatus,
 		setFilterStatus,
 		selectedIds,
@@ -65,7 +56,6 @@ export function useEmployees(initialEmployees: Employee[]) {
 		rowsPerPage,
 		setRowsPerPage,
 		filteredEmployees,
-		departments,
 		statuses,
 		toggleSelectAll,
 		toggleSelect,

@@ -3,7 +3,6 @@ import {
 	ArrowLeft01Icon,
 	Calendar03Icon,
 	CheckmarkCircle01Icon,
-	FileUploadIcon,
 	NoteIcon,
 	UserRemove01Icon,
 } from "@hugeicons/core-free-icons";
@@ -33,50 +32,56 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/mock-api";
-import { cn } from "@/lib/utils";
+import {
+	useChangeEmployeeStatusMutation,
+	useGetEmployeesQuery,
+} from "@/lib/redux/api/employee";
 
 export const Route = createFileRoute("/dashboard/employees/resign")({
-	loader: async () => {
-		const employees = await api.getEmployees();
-		return {
-			employees: employees.filter(
-				(e) => e.status === "active" || e.status === "probation",
-			),
-		};
-	},
 	pendingComponent: DashboardPending,
 	component: ResignEmployeePage,
 });
 
-const RESIGNATION_REASONS = [
-	"Better Opportunity",
-	"Personal Reasons",
-	"Career Change",
-	"Relocation",
-	"Health Reasons",
-	"Further Education",
-	"Other",
+const RESIGNATION_REASONS: { value: string; label: string }[] = [
+	{ value: "BETTER_OPPORTUNITY", label: "Better Opportunity" },
+	{ value: "CAREER_CHANGE", label: "Career Change" },
+	{ value: "PERSONAL_REASONS", label: "Personal Reasons" },
+	{ value: "HEALTH_REASONS", label: "Health Reasons" },
+	{ value: "RELOCATION", label: "Relocation" },
+	{ value: "FAMILY_RESPONSIBILITIES", label: "Family Responsibilities" },
+	{ value: "EDUCATION", label: "Education" },
+	{ value: "RETIREMENT", label: "Retirement" },
+	{ value: "CONTRACT_END", label: "Contract End" },
+	{ value: "PERFORMANCE", label: "Performance" },
+	{ value: "MISCONDUCT", label: "Misconduct" },
+	{ value: "POLICY_VIOLATION", label: "Policy Violation" },
+	{ value: "ATTENDANCE_ISSUES", label: "Attendance Issues" },
+	{ value: "ROLE_NO_LONGER_REQUIRED", label: "Role No Longer Required" },
+	{ value: "MUTUAL_AGREEMENT", label: "Mutual Agreement" },
+	{ value: "PROBATION_NOT_CONFIRMED", label: "Probation Not Confirmed" },
+	{ value: "DEATH", label: "Death" },
+	{ value: "OTHER", label: "Other" },
 ];
 
 function ResignEmployeePage() {
-	const { employees } = Route.useLoaderData();
 	const navigate = useNavigate();
-	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
+	const [resignedName, setResignedName] = useState("");
+
+	const { data: employeesData, isLoading: isLoadingEmployees } =
+		useGetEmployeesQuery({ status: "ACTIVE", limit: 100 });
+	const [changeEmployeeStatus, { isLoading: isSubmitting }] =
+		useChangeEmployeeStatusMutation();
 
 	const [formData, setFormData] = useState({
 		employeeId: "",
-		resignationDate: new Date().toISOString().split("T")[0],
+		endDate: new Date().toISOString().split("T")[0],
 		lastWorkingDay: "",
 		reason: "",
-		notes: "",
-		// Documents
-		resignationLetter: false,
-		experienceLetter: false,
-		clearanceLetter: false,
+		comment: "",
 	});
 
+	const employees = employeesData?.items || [];
 	const selectedEmployee = employees.find((e) => e.id === formData.employeeId);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -86,17 +91,22 @@ function ResignEmployeePage() {
 			return;
 		}
 
-		setIsSubmitting(true);
 		try {
-			await api.updateEmployee(formData.employeeId, {
-				status: "resigned",
-			});
+			await changeEmployeeStatus({
+				id: formData.employeeId,
+				status: "RESIGNED",
+				...(formData.endDate ? { endDate: formData.endDate } : {}),
+				lastWorkingDay: formData.lastWorkingDay,
+				reason: formData.reason,
+				...(formData.comment.trim() ? { comment: formData.comment.trim() } : {}),
+			}).unwrap();
+			setResignedName(
+				`${selectedEmployee?.firstName ?? ""} ${selectedEmployee?.lastName ?? ""}`.trim(),
+			);
 			setIsSuccess(true);
 			toast.success("Resignation processed successfully");
-		} catch (_err) {
-			toast.error("Failed to process resignation");
-		} finally {
-			setIsSubmitting(false);
+		} catch (err: any) {
+			toast.error(err?.data?.message || "Failed to process resignation");
 		}
 	};
 
@@ -120,14 +130,12 @@ function ResignEmployeePage() {
 								</h2>
 								<p className="text-sm text-muted-foreground font-medium mb-10 leading-relaxed">
 									<span className="text-foreground font-semibold">
-										{selectedEmployee?.name}
+										{resignedName}
 									</span>{" "}
 									is no longer active in the primary directory. Payroll
 									processing has been halted.
 								</p>
-								<Button
-									onClick={() => navigate({ to: "/dashboard/employees" })}
-								>
+								<Button onClick={() => navigate({ to: "/dashboard/employees" })}>
 									Return to Directory
 								</Button>
 							</FrameContent>
@@ -158,7 +166,7 @@ function ResignEmployeePage() {
 				<div className="max-w-4xl w-full">
 					<form onSubmit={handleSubmit}>
 						<div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-							{/* Left Column: Form Details */}
+							{/* Left Column */}
 							<div className="lg:col-span-7 space-y-6">
 								<Frame>
 									<FramePanel className="bg-card">
@@ -176,11 +184,9 @@ function ResignEmployeePage() {
 											</div>
 										</FrameHeader>
 										<FrameContent className="p-8 space-y-8">
+											{/* Employee select */}
 											<div className="space-y-2">
-												<Label
-													htmlFor="employee"
-													className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1"
-												>
+												<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
 													Select Employee{" "}
 													<span className="text-destructive">*</span>
 												</Label>
@@ -191,15 +197,23 @@ function ResignEmployeePage() {
 													}
 												>
 													<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors font-semibold">
-														<SelectValue placeholder="Search or select employee..." />
+														<span className="flex flex-1 text-start text-sm">
+															{selectedEmployee
+																? `${selectedEmployee.firstName} ${selectedEmployee.lastName}`
+																: isLoadingEmployees
+																	? "Loading employees..."
+																	: "Select employee..."}
+														</span>
 													</SelectTrigger>
 													<SelectContent>
 														{employees.map((emp) => (
 															<SelectItem key={emp.id} value={emp.id}>
 																<div className="flex flex-col text-left">
-																	<span className="font-bold">{emp.name}</span>
+																	<span className="font-bold">
+																		{emp.firstName} {emp.lastName}
+																	</span>
 																	<span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-																		{emp.position} • {emp.department}
+																		{emp.jobTitle ?? ""}{emp.departmentName ? ` · ${emp.departmentName}` : ""}
 																	</span>
 																</div>
 															</SelectItem>
@@ -208,39 +222,29 @@ function ResignEmployeePage() {
 												</Select>
 											</div>
 
+											{/* Dates */}
 											<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 												<div className="space-y-2">
-													<Label
-														htmlFor="resignationDate"
-														className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1 flex items-center gap-2"
-													>
+													<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1 flex items-center gap-2">
 														<HugeiconsIcon icon={Calendar03Icon} size={12} />
-														Resignation Date
+														End Date
 													</Label>
 													<Input
-														id="resignationDate"
 														type="date"
 														className="h-11 bg-muted/5 border-border/40 focus:bg-background font-medium"
-														value={formData.resignationDate}
+														value={formData.endDate}
 														onChange={(e) =>
-															setFormData({
-																...formData,
-																resignationDate: e.target.value,
-															})
+															setFormData({ ...formData, endDate: e.target.value })
 														}
 													/>
 												</div>
 												<div className="space-y-2">
-													<Label
-														htmlFor="lastWorkingDay"
-														className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1 flex items-center gap-2"
-													>
+													<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1 flex items-center gap-2">
 														<HugeiconsIcon icon={Calendar03Icon} size={12} />
 														Last Working Day{" "}
 														<span className="text-destructive">*</span>
 													</Label>
 													<Input
-														id="lastWorkingDay"
 														type="date"
 														className="h-11 bg-muted/5 border-border/40 focus:bg-background font-medium"
 														value={formData.lastWorkingDay}
@@ -254,14 +258,11 @@ function ResignEmployeePage() {
 												</div>
 											</div>
 
+											{/* Reason */}
 											<div className="space-y-2">
-												<Label
-													htmlFor="reason"
-													className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1 flex items-center gap-2"
-												>
+												<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1 flex items-center gap-2">
 													<HugeiconsIcon icon={NoteIcon} size={12} />
-													Primary Reason{" "}
-													<span className="text-destructive">*</span>
+													Reason <span className="text-destructive">*</span>
 												</Label>
 												<Select
 													value={formData.reason}
@@ -273,29 +274,26 @@ function ResignEmployeePage() {
 														<SelectValue placeholder="Select a reason..." />
 													</SelectTrigger>
 													<SelectContent>
-														{RESIGNATION_REASONS.map((reason) => (
-															<SelectItem key={reason} value={reason}>
-																{reason}
+														{RESIGNATION_REASONS.map((r) => (
+															<SelectItem key={r.value} value={r.value}>
+																{r.label}
 															</SelectItem>
 														))}
 													</SelectContent>
 												</Select>
 											</div>
 
+											{/* Comment */}
 											<div className="space-y-2">
-												<Label
-													htmlFor="notes"
-													className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1"
-												>
-													Handover Notes (Optional)
+												<Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">
+													Comment (Optional)
 												</Label>
 												<Textarea
-													id="notes"
-													placeholder="Provide details about handover process..."
+													placeholder="Provide additional context or handover notes..."
 													className="min-h-[120px] rounded-xl border-border/40 bg-muted/5 focus:bg-background font-medium resize-none"
-													value={formData.notes}
+													value={formData.comment}
 													onChange={(e) =>
-														setFormData({ ...formData, notes: e.target.value })
+														setFormData({ ...formData, comment: e.target.value })
 													}
 												/>
 											</div>
@@ -310,7 +308,7 @@ function ResignEmployeePage() {
 								</Frame>
 							</div>
 
-							{/* Right Column: Policies & Documents */}
+							{/* Right Column: Info */}
 							<div className="lg:col-span-5 space-y-6">
 								<Frame>
 									<FramePanel className="bg-primary/[0.02] border-primary/10">
@@ -333,64 +331,26 @@ function ResignEmployeePage() {
 										</FrameContent>
 									</FramePanel>
 
-									<FramePanel className="bg-card">
-										<FrameHeader>
-											<FrameTitle className="text-xs uppercase tracking-widest">
-												Offboarding Policy
-											</FrameTitle>
-										</FrameHeader>
-										<FrameContent className="p-4 space-y-4">
-											{[
-												{
-													key: "resignationLetter",
-													label: "Resignation Letter",
-												},
-												{ key: "experienceLetter", label: "Experience Letter" },
-												{ key: "clearanceLetter", label: "Clearance Letter" },
-											].map((doc) => (
-												<div
-													key={doc.key}
-													className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-muted/5 transition-all"
-												>
-													<div className="flex items-center gap-3">
-														<div
-															className={cn(
-																"h-8 w-8 rounded-md flex items-center justify-center border transition-all",
-																(formData as any)[doc.key]
-																	? "bg-primary/10 text-primary border-primary/20"
-																	: "bg-background text-muted-foreground/40 border-border/40",
-															)}
-														>
-															<HugeiconsIcon
-																icon={
-																	(formData as any)[doc.key]
-																		? CheckmarkCircle01Icon
-																		: FileUploadIcon
-																}
-																size={16}
-															/>
-														</div>
-														<span className="text-xs font-bold text-foreground/80">
-															{doc.label}
-														</span>
-													</div>
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														onClick={() =>
-															setFormData({
-																...formData,
-																[doc.key]: !(formData as any)[doc.key],
-															})
-														}
-													>
-														{(formData as any)[doc.key] ? "Ready" : "Upload"}
-													</Button>
-												</div>
-											))}
-										</FrameContent>
-									</FramePanel>
+									{selectedEmployee && (
+										<FramePanel className="bg-card">
+											<FrameHeader>
+												<FrameTitle className="text-xs uppercase tracking-widest">
+													Selected Employee
+												</FrameTitle>
+											</FrameHeader>
+											<FrameContent className="p-5 space-y-2">
+												<p className="text-sm font-bold text-foreground/90">
+													{selectedEmployee.firstName} {selectedEmployee.lastName}
+												</p>
+												<p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+													{selectedEmployee.jobTitle ?? "—"} · {selectedEmployee.departmentName ?? "—"}
+												</p>
+												<p className="text-[10px] font-semibold text-muted-foreground/50">
+													{selectedEmployee.email}
+												</p>
+											</FrameContent>
+										</FramePanel>
+									)}
 								</Frame>
 							</div>
 						</div>

@@ -9,6 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCookie } from "@/lib/cookies";
@@ -91,9 +92,7 @@ function Home() {
 			<header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-							<span className="text-sm font-bold text-primary">H</span>
-						</div>
+						<Logo className="size-8" />
 						<span className="font-bold text-foreground">HRMS</span>
 					</div>
 					<nav className="hidden md:flex items-center gap-8">
@@ -261,9 +260,7 @@ function Home() {
 					<div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
 						<div>
 							<div className="flex items-center gap-2 mb-4">
-								<div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-									<span className="text-xs font-bold text-primary">H</span>
-								</div>
+								<Logo className="size-6" />
 								<span className="font-bold text-foreground">HRMS</span>
 							</div>
 							<p className="text-sm text-muted-foreground">

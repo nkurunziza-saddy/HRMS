@@ -13,6 +13,9 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useGetCompanyQuery } from "@/lib/redux/api/company";
+import { useGetEmployeeQuery } from "@/lib/redux/api/employee";
+import { useGetJobPostingQuery } from "@/lib/redux/api/job-posting";
 
 const routeLabels: Record<string, string> = {
 	dashboard: "Overview",
@@ -26,12 +29,43 @@ const routeLabels: Record<string, string> = {
 	help: "Help Center",
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function SiteHeader() {
 	const { pathname } = useLocation();
 	const segments = pathname.split("/").filter(Boolean);
 	const { theme, setTheme } = useTheme();
 
-	const labels = segments.map((s) => routeLabels[s] || s);
+	const lastSegment = segments[segments.length - 1] ?? "";
+	const parentSegment = segments[segments.length - 2] ?? "";
+	const isEmployeeDetail = parentSegment === "employees" && UUID_RE.test(lastSegment);
+	const isRecruitmentDetail = parentSegment === "recruitment" && UUID_RE.test(lastSegment);
+	const isCompanyDetail = parentSegment === "companies" && UUID_RE.test(lastSegment);
+
+	const { data: employee } = useGetEmployeeQuery(lastSegment, {
+		skip: !isEmployeeDetail,
+	});
+	const { data: jobPosting } = useGetJobPostingQuery(lastSegment, {
+		skip: !isRecruitmentDetail,
+	});
+	const { data: company } = useGetCompanyQuery(lastSegment, {
+		skip: !isCompanyDetail,
+	});
+
+	const getLabel = (s: string) => {
+		if (UUID_RE.test(s) && parentSegment === "employees") {
+			return employee ? `${employee.firstName} ${employee.lastName}` : "…";
+		}
+		if (UUID_RE.test(s) && parentSegment === "recruitment") {
+			return jobPosting ? jobPosting.title : "…";
+		}
+		if (UUID_RE.test(s) && parentSegment === "companies") {
+			return company ? company.name : "…";
+		}
+		return routeLabels[s] || s;
+	};
+
+	const labels = segments.map(getLabel);
 	const currentLabel = labels[labels.length - 1] || "Dashboard";
 	const parentLabel = labels.length > 1 ? labels[labels.length - 2] : null;
 

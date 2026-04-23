@@ -31,15 +31,32 @@ export type RecruitmentStage =
 
 export type DocumentType =
 	| "CV"
-	| "ID"
-	| "CONTRACT"
-	| "CRIMINAL_CERTIFICATE"
-	| "MEDICAL_REPORT"
-	| "RESIGNATION_LETTER"
+	| "COVER_LETTER"
+	| "NATIONAL_ID"
+	| "PASSPORT"
+	| "DEGREE"
+	| "CERTIFICATE"
+	| "OFFER_LETTER"
+	| "EMPLOYMENT_CONTRACT"
+	| "MEDICAL_CERTIFICATE"
+	| "CLEARANCE_LETTER"
 	| "EXPERIENCE_LETTER"
-	| "CLEARENCE_LETTER"
-	| "POLICY_MANUAL"
-	| "TEMPLATE";
+	| "TERMINATION_LETTER"
+	| "PERFORMANCE_REVIEW"
+	| "PROMOTION_LETTER"
+	| "OTHER";
+
+export type DocumentPhase =
+	| "APPLICATION"
+	| "ONBOARDING"
+	| "PROBATION"
+	| "CONFIRMATION"
+	| "TERMINATION"
+	| "RESIGNATION"
+	| "SHORTLISTING"
+	| "INTERVIEW"
+	| "OFFER"
+	| "OFFBOARDING";
 
 export interface Company {
 	id: string;
@@ -112,45 +129,98 @@ export interface PayrollDetails {
 	taxId: string;
 }
 
-export interface Employee {
+export type EmployeeStatus = "ACTIVE" | "INACTIVE" | "PENDING" | "PROBATION" | "RESIGNED" | "TERMINATED";
+
+export type ContractTerm = "FIXED" | "OPEN_ENDED";
+
+export interface EmployeeHistoryEntry {
+	doneAt: string;
+	doneBy: string;
+	status: EmployeeStatus;
+	comment: string;
+	doneByName: string;
+}
+
+export interface EmployeeDepartment {
 	id: string;
 	name: string;
+	description: string;
+	status: string;
+}
+
+export interface EmployeeCompany {
+	id: string;
+	name: string;
+	identificationNumber: number;
+	tin: string;
+	ownershipType: string;
+	type: string;
+	status: string;
+	branchType: string;
+	branchCode: string | null;
+}
+
+export interface EmployeePerson {
+	id: string;
+	createdAt: string;
+	updatedAt: string;
+	deletedAt: string | null;
 	firstName: string;
 	lastName: string;
-	idNumber: string;
+	IDNumber: string;
+	phoneNumber: string;
 	email: string;
-	department: string;
-	position: string;
-	status:
-		| "active"
-		| "inactive"
-		| "pending"
-		| "probation"
-		| "resigned"
-		| "terminated";
-	hireDate: string;
-	image?: string;
-	phone?: string;
-	manager?: string;
-	dob?: string;
-	address?: string;
-	city?: string;
-	country?: string;
-	zipCode?: string;
-	complianceStatus: "compliant" | "non-compliant";
-	onboardingProgress: number;
-	payroll?: PayrollDetails;
+	gender: "MALE" | "FEMALE";
+}
+
+export interface EmployeeJobPost {
+	id: string;
+	title: string;
+	aboutRole: string;
+	mission: string;
+	location: string;
+	status: string;
+	workMode: string;
+	applicationDeadline: string;
+}
+
+export interface Employee {
+	id: string;
+	createdAt: string;
+	updatedAt: string;
+	deletedAt: string | null;
+	status: EmployeeStatus;
+	startDate: string;
+	endDate: string | null;
+	contractTerm: ContractTerm;
+	history: EmployeeHistoryEntry[] | null;
+	firstName: string;
+	lastName: string;
+	IDNumber: string;
+	phoneNumber: string;
+	email: string;
+	gender: "MALE" | "FEMALE";
+	jobTitle?: string;
+	departmentName?: string;
+	// Detail-only fields
+	person?: EmployeePerson;
+	department?: EmployeeDepartment;
+	company?: EmployeeCompany;
+	jobPost?: EmployeeJobPost;
 }
 
 export interface EmployeeDocument {
 	id: string;
-	employeeId: string;
-	employeeName: string;
+	createdAt: string;
+	updatedAt: string;
+	deletedAt: string | null;
 	type: DocumentType;
-	fileName: string;
-	fileSize: string;
-	uploadedAt: string;
-	status: "active" | "replaced";
+	phase: DocumentPhase;
+	url: string;
+	isActive: boolean;
+	isVerified: boolean;
+	verifiedAt: string | null;
+	expiresAt: string | null;
 }
 
 export interface SystemLog {
@@ -330,6 +400,7 @@ export type ApplicantStatus =
 export interface ChangeApplicantStatusRequest {
 	status: ApplicantStatus;
 	comment?: string;
+	contractTerm?: "FIXED" | "OPEN_ENDED";
 }
 
 export interface ApplicantHistory {
@@ -358,6 +429,7 @@ export interface Applicant {
 	createdAt: string;
 	updatedAt: string;
 	history: ApplicantHistory[];
+	applicationDocuments?: EmployeeDocument[];
 }
 
 export interface LeaveRequest {

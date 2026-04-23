@@ -12,7 +12,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardPending } from "@/components/dashboard/dashboard-pending";
 import { Button } from "@/components/ui/button";
 import {
 	Frame,
@@ -71,16 +70,12 @@ function OnboardEmployeePage() {
 			activeCompanyId ? { companyId: activeCompanyId } : undefined,
 			{ skip: !activeCompanyId },
 		);
-	const { data: jobTitlesData, isLoading: isLoadingTitles } =
-		useGetJobTitlesQuery(
-			activeCompanyId ? { companyId: activeCompanyId } : undefined,
-			{ skip: !activeCompanyId },
-		);
 	const [onboardEmployee] = useOnboardEmployeeMutation();
 
 	const [step, setStep] = useState(1);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
+	const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
 
 	const [formData, setFormData] = useState({
 		firstName: search.firstName || "",
@@ -91,6 +86,7 @@ function OnboardEmployeePage() {
 		gender: "MALE",
 		departmentId: "",
 		jobTitleId: "",
+		contractType: "FIXED" as "FIXED" | "OPEN_ENDED",
 		startDate: new Date().toISOString().split("T")[0],
 		endDate: "",
 		// files
@@ -104,28 +100,55 @@ function OnboardEmployeePage() {
 		other: null as File | null,
 	});
 
+	const { data: jobTitlesData, isLoading: isLoadingTitles } =
+		useGetJobTitlesQuery(
+			formData.departmentId
+				? { departmentId: formData.departmentId }
+				: undefined,
+			{ skip: !formData.departmentId },
+		);
+
 	const departments = departmentsData?.items || [];
 	const jobTitles = jobTitlesData?.items || [];
 
+	const CV_TYPES = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+	const CV_EXTS = [".pdf", ".doc", ".docx"];
+	const DOC_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+	const DOC_EXTS = [".pdf", ".jpg", ".jpeg", ".png"];
+
 	const handleFileClick = (key: string) => {
 		setActiveDocKey(key);
+		if (fileInputRef.current) {
+			fileInputRef.current.accept = key === "cv" ? ".pdf,.doc,.docx" : ".pdf,.jpg,.jpeg,.png";
+		}
 		fileInputRef.current?.click();
 	};
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file && activeDocKey) {
+			const ext = "." + file.name.split(".").pop()?.toLowerCase();
+			const isCv = activeDocKey === "cv";
+			const allowed = isCv
+				? CV_TYPES.includes(file.type) || CV_EXTS.includes(ext)
+				: DOC_TYPES.includes(file.type) || DOC_EXTS.includes(ext);
+			if (!allowed) {
+				setFileErrors((prev) => ({
+					...prev,
+					[activeDocKey]: isCv
+						? "Only PDF, DOC, or DOCX files are allowed"
+						: "Only JPG, PNG, or PDF files are allowed",
+				}));
+				e.target.value = "";
+				return;
+			}
+			setFileErrors((prev) => { const next = { ...prev }; delete next[activeDocKey]; return next; });
 			setFormData((prev) => ({ ...prev, [activeDocKey]: file }));
 		}
-		e.target.value = ""; // Reset for next selection
+		e.target.value = "";
 	};
 
 	const handleSubmit = async () => {
-		if (!activeCompanyId) {
-			toast.error("No active company selected");
-			return;
-		}
-
 		setIsSubmitting(true);
 		const data = new FormData();
 		data.append("firstName", formData.firstName);
@@ -136,8 +159,10 @@ function OnboardEmployeePage() {
 		data.append("gender", formData.gender);
 		data.append("departmentId", formData.departmentId);
 		data.append("jobTitleId", formData.jobTitleId);
+		data.append("contractTerm", formData.contractType);
+		if (search.applicantId) data.append("applicantId", search.applicantId);
 		if (formData.startDate) data.append("startDate", formData.startDate);
-		if (formData.endDate) data.append("endDate", formData.endDate);
+		if (formData.contractType === "FIXED" && formData.endDate) data.append("endDate", formData.endDate);
 
 		// Append files
 		const fileKeys = ["cv", "nationalId", "passport", "degree", "certificate", "medicalCertificate", "employmentContract", "other"];
@@ -179,7 +204,6 @@ function OnboardEmployeePage() {
 		</div>
 	);
 
-	if (isLoadingDepts || isLoadingTitles) return <DashboardPending />;
 
 	if (isSuccess) {
 		return (
@@ -239,6 +263,7 @@ function OnboardEmployeePage() {
 				type="file"
 				ref={fileInputRef}
 				className="hidden"
+				accept=".pdf,.doc,.docx"
 				onChange={handleFileChange}
 			/>
 
@@ -414,11 +439,15 @@ function OnboardEmployeePage() {
 												<Select
 													value={formData.departmentId}
 													onValueChange={(val) =>
-														setFormData({ ...formData, departmentId: val || "" })
+														setFormData({ ...formData, departmentId: val || "", jobTitleId: "" })
 													}
 												>
 													<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background">
-														<SelectValue placeholder="Select Department" />
+														<SelectValue placeholder="Select Department">
+																{formData.departmentId
+																	? departments.find((d: any) => d.id === formData.departmentId)?.name
+																	: undefined}
+															</SelectValue>
 													</SelectTrigger>
 													<SelectContent>
 														{isLoadingDepts ? (
@@ -427,7 +456,7 @@ function OnboardEmployeePage() {
 															</SelectItem>
 														) : departments.length > 0 ? (
 															departments.map((d: any) => (
-																<SelectItem key={d.id} value={d.id}>
+																<SelectItem key={d.id} value={d.id} label={d.name}>
 																	{d.name}
 																</SelectItem>
 															))
@@ -453,7 +482,11 @@ function OnboardEmployeePage() {
 													}
 												>
 													<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background">
-														<SelectValue placeholder="Select Position" />
+														<SelectValue placeholder="Select Position">
+															{formData.jobTitleId
+																? jobTitles.find((j: any) => j.id === formData.jobTitleId)?.name
+																: undefined}
+														</SelectValue>
 													</SelectTrigger>
 													<SelectContent>
 														{isLoadingTitles ? (
@@ -461,17 +494,11 @@ function OnboardEmployeePage() {
 																Loading positions...
 															</SelectItem>
 														) : jobTitles.length > 0 ? (
-															jobTitles
-																.filter(
-																	(j: any) =>
-																		!formData.departmentId ||
-																		j.departmentId === formData.departmentId,
-																)
-																.map((j: any) => (
-																	<SelectItem key={j.id} value={j.id}>
-																		{j.name || j.title}
-																	</SelectItem>
-																))
+															jobTitles.map((j: any) => (
+																<SelectItem key={j.id} value={j.id}>
+																	{j.name}
+																</SelectItem>
+															))
 														) : (
 															<SelectItem value="none" disabled>
 																No positions found
@@ -481,7 +508,29 @@ function OnboardEmployeePage() {
 												</Select>
 											</div>
 										</div>
-										<div className="grid grid-cols-2 gap-6">
+										<div className="space-y-2">
+											<Label
+												htmlFor="contractType"
+												className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
+											>
+												Contract Type
+											</Label>
+											<Select
+												value={formData.contractType}
+												onValueChange={(val) =>
+													setFormData({ ...formData, contractType: val as "FIXED" | "OPEN_ENDED" })
+												}
+											>
+												<SelectTrigger className="h-11 bg-muted/5 border-border/40 focus:bg-background">
+													<SelectValue placeholder="Select Contract Type" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="FIXED">Fixed Term</SelectItem>
+													<SelectItem value="OPEN_ENDED">Open Ended</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
+										<div className={cn("grid gap-6", formData.contractType === "FIXED" ? "grid-cols-2" : "grid-cols-1")}>
 											<div className="space-y-2">
 												<Label
 													htmlFor="startDate"
@@ -502,26 +551,28 @@ function OnboardEmployeePage() {
 													}
 												/>
 											</div>
-											<div className="space-y-2">
-												<Label
-													htmlFor="endDate"
-													className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
-												>
-													End Date (Optional)
-												</Label>
-												<Input
-													id="endDate"
-													type="date"
-													className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors font-semibold"
-													value={formData.endDate}
-													onChange={(e) =>
-														setFormData({
-															...formData,
-															endDate: e.target.value,
-														})
-													}
-												/>
-											</div>
+											{formData.contractType === "FIXED" && (
+												<div className="space-y-2">
+													<Label
+														htmlFor="endDate"
+														className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60"
+													>
+														End Date
+													</Label>
+													<Input
+														id="endDate"
+														type="date"
+														className="h-11 bg-muted/5 border-border/40 focus:bg-background transition-colors font-semibold"
+														value={formData.endDate}
+														onChange={(e) =>
+															setFormData({
+																...formData,
+																endDate: e.target.value,
+															})
+														}
+													/>
+												</div>
+											)}
 										</div>
 									</div>
 								)}
@@ -538,10 +589,8 @@ function OnboardEmployeePage() {
 											{ key: "employmentContract", label: "Signed Employment Contract" },
 											{ key: "other", label: "Other Relevant Document" },
 										].map((doc) => (
-											<div
-												key={doc.key}
-												className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-muted/5 hover:bg-muted/10 transition-colors"
-											>
+											<div key={doc.key} className="space-y-1">
+												<div className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-muted/5 hover:bg-muted/10 transition-colors">
 												<div className="flex items-center gap-4">
 													<div
 														className={cn(
@@ -565,25 +614,36 @@ function OnboardEmployeePage() {
 															{doc.label}
 														</p>
 														<p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-															{(formData as any)[doc.key] ? (formData as any)[doc.key].name : "Required attachment"}
+															{(formData as any)[doc.key]
+																? (formData as any)[doc.key].name
+																: doc.key === "cv" ? "PDF, DOC, DOCX · Optional" : "JPG, PNG, PDF · Optional"}
 														</p>
 													</div>
 												</div>
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => handleFileClick(doc.key)}
-													className={cn(
-														"font-bold h-8 text-xs shrink-0",
-														(formData as any)[doc.key]
-															? "text-primary hover:bg-primary/5"
-															: "text-muted-foreground hover:bg-muted/10",
-													)}
-												>
-													{(formData as any)[doc.key]
-														? "Replace"
-														: "Upload"}
-												</Button>
+												{(formData as any)[doc.key] ? (
+													<Button
+														variant="ghost"
+														size="sm"
+														onClick={() => handleFileClick(doc.key)}
+														className="font-bold h-8 text-xs shrink-0 text-primary hover:bg-primary/5"
+													>
+														Replace
+													</Button>
+												) : (
+													<Button
+														size="sm"
+														onClick={() => handleFileClick(doc.key)}
+														className="font-bold h-8 text-xs shrink-0"
+													>
+														Upload
+													</Button>
+												)}
+												</div>
+												{fileErrors[doc.key] && (
+													<p className="text-xs text-destructive font-semibold px-1">
+														{fileErrors[doc.key]}
+													</p>
+												)}
 											</div>
 										))}
 									</div>
