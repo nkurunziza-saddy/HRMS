@@ -9,58 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as DocsRouteImport } from './routes/docs'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
-import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
-import { Route as DashboardPositionsRouteImport } from './routes/dashboard.positions'
-import { Route as DashboardPerformanceRouteImport } from './routes/dashboard.performance'
-import { Route as DashboardLeavesRouteImport } from './routes/dashboard.leaves'
-import { Route as DashboardHelpRouteImport } from './routes/dashboard.help'
-import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
-import { Route as DashboardDepartmentsRouteImport } from './routes/dashboard.departments'
-import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
-import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
-import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
-import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
-import { Route as AuthLoginRouteImport } from './routes/auth.login'
-import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
-import { Route as AuthChangePasswordRouteImport } from './routes/auth.change-password'
-import { Route as ApplyJobIdRouteImport } from './routes/apply.$jobId'
-import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
-import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminDepartmentsRouteImport } from './routes/admin.departments'
-import { Route as DashboardRecruitmentIndexRouteImport } from './routes/dashboard.recruitment.index'
-import { Route as DashboardPayrollIndexRouteImport } from './routes/dashboard.payroll.index'
-import { Route as DashboardEmployeesIndexRouteImport } from './routes/dashboard.employees.index'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as ApplyJobIdRouteImport } from './routes/apply.$jobId'
+import { Route as AuthChangePasswordRouteImport } from './routes/auth.change-password'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
+import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
+import { Route as DashboardDepartmentsRouteImport } from './routes/dashboard.departments'
+import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
+import { Route as DashboardHelpRouteImport } from './routes/dashboard.help'
+import { Route as DashboardLeavesRouteImport } from './routes/dashboard.leaves'
+import { Route as DashboardPerformanceRouteImport } from './routes/dashboard.performance'
+import { Route as DashboardPositionsRouteImport } from './routes/dashboard.positions'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as AdminCompaniesIndexRouteImport } from './routes/admin.companies.index'
-import { Route as DashboardRecruitmentIdRouteImport } from './routes/dashboard.recruitment.$id'
-import { Route as DashboardPayrollIdRouteImport } from './routes/dashboard.payroll.$id'
-import { Route as DashboardEmployeesResignRouteImport } from './routes/dashboard.employees.resign'
-import { Route as DashboardEmployeesOnboardRouteImport } from './routes/dashboard.employees.onboard'
-import { Route as DashboardEmployeesIdRouteImport } from './routes/dashboard.employees.$id'
-import { Route as AdminCompaniesRegisterRouteImport } from './routes/admin.companies.register'
 import { Route as AdminCompaniesIdRouteImport } from './routes/admin.companies.$id'
+import { Route as AdminCompaniesRegisterRouteImport } from './routes/admin.companies.register'
+import { Route as DashboardEmployeesIndexRouteImport } from './routes/dashboard.employees.index'
+import { Route as DashboardEmployeesIdRouteImport } from './routes/dashboard.employees.$id'
+import { Route as DashboardEmployeesOnboardRouteImport } from './routes/dashboard.employees.onboard'
+import { Route as DashboardEmployeesResignRouteImport } from './routes/dashboard.employees.resign'
+import { Route as DashboardPayrollIndexRouteImport } from './routes/dashboard.payroll.index'
+import { Route as DashboardPayrollIdRouteImport } from './routes/dashboard.payroll.$id'
+import { Route as DashboardRecruitmentIndexRouteImport } from './routes/dashboard.recruitment.index'
+import { Route as DashboardRecruitmentIdRouteImport } from './routes/dashboard.recruitment.$id'
 import { Route as DashboardRecruitmentApplicantIdRouteImport } from './routes/dashboard.recruitment.applicant.$id'
 
-const DocsRoute = DocsRouteImport.update({
-  id: '/docs',
-  path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -68,109 +58,24 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRoute,
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardReportsRoute = DashboardReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPositionsRoute = DashboardPositionsRouteImport.update({
-  id: '/positions',
-  path: '/positions',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPerformanceRoute = DashboardPerformanceRouteImport.update({
-  id: '/performance',
-  path: '/performance',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardLeavesRoute = DashboardLeavesRouteImport.update({
-  id: '/leaves',
-  path: '/leaves',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardHelpRoute = DashboardHelpRouteImport.update({
-  id: '/help',
-  path: '/help',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardDocumentsRoute = DashboardDocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardDepartmentsRoute = DashboardDepartmentsRouteImport.update({
-  id: '/departments',
-  path: '/departments',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const AuthVerifyRoute = AuthVerifyRouteImport.update({
-  id: '/verify',
-  path: '/verify',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthChangePasswordRoute = AuthChangePasswordRouteImport.update({
-  id: '/change-password',
-  path: '/change-password',
-  getParentRoute: () => AuthRoute,
-} as any)
-const ApplyJobIdRoute = ApplyJobIdRouteImport.update({
-  id: '/apply/$jobId',
-  path: '/apply/$jobId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminLogsRoute = AdminLogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDepartmentsRoute = AdminDepartmentsRouteImport.update({
@@ -178,20 +83,99 @@ const AdminDepartmentsRoute = AdminDepartmentsRouteImport.update({
   path: '/departments',
   getParentRoute: () => AdminRoute,
 } as any)
-const DashboardRecruitmentIndexRoute =
-  DashboardRecruitmentIndexRouteImport.update({
-    id: '/recruitment/',
-    path: '/recruitment/',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardPayrollIndexRoute = DashboardPayrollIndexRouteImport.update({
-  id: '/payroll/',
-  path: '/payroll/',
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ApplyJobIdRoute = ApplyJobIdRouteImport.update({
+  id: '/apply/$jobId',
+  path: '/apply/$jobId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthChangePasswordRoute = AuthChangePasswordRouteImport.update({
+  id: '/change-password',
+  path: '/change-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardEmployeesIndexRoute = DashboardEmployeesIndexRouteImport.update({
-  id: '/employees/',
-  path: '/employees/',
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDepartmentsRoute = DashboardDepartmentsRouteImport.update({
+  id: '/departments',
+  path: '/departments',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDocumentsRoute = DashboardDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardHelpRoute = DashboardHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLeavesRoute = DashboardLeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPerformanceRoute = DashboardPerformanceRouteImport.update({
+  id: '/performance',
+  path: '/performance',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPositionsRoute = DashboardPositionsRouteImport.update({
+  id: '/positions',
+  path: '/positions',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => DashboardRoute,
 } as any)
 const AdminCompaniesIndexRoute = AdminCompaniesIndexRouteImport.update({
@@ -199,9 +183,41 @@ const AdminCompaniesIndexRoute = AdminCompaniesIndexRouteImport.update({
   path: '/companies/',
   getParentRoute: () => AdminRoute,
 } as any)
-const DashboardRecruitmentIdRoute = DashboardRecruitmentIdRouteImport.update({
-  id: '/recruitment/$id',
-  path: '/recruitment/$id',
+const AdminCompaniesIdRoute = AdminCompaniesIdRouteImport.update({
+  id: '/companies/$id',
+  path: '/companies/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCompaniesRegisterRoute = AdminCompaniesRegisterRouteImport.update({
+  id: '/companies/register',
+  path: '/companies/register',
+  getParentRoute: () => AdminRoute,
+} as any)
+const DashboardEmployeesIndexRoute = DashboardEmployeesIndexRouteImport.update({
+  id: '/employees/',
+  path: '/employees/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEmployeesIdRoute = DashboardEmployeesIdRouteImport.update({
+  id: '/employees/$id',
+  path: '/employees/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEmployeesOnboardRoute =
+  DashboardEmployeesOnboardRouteImport.update({
+    id: '/employees/onboard',
+    path: '/employees/onboard',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardEmployeesResignRoute =
+  DashboardEmployeesResignRouteImport.update({
+    id: '/employees/resign',
+    path: '/employees/resign',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardPayrollIndexRoute = DashboardPayrollIndexRouteImport.update({
+  id: '/payroll/',
+  path: '/payroll/',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardPayrollIdRoute = DashboardPayrollIdRouteImport.update({
@@ -209,32 +225,16 @@ const DashboardPayrollIdRoute = DashboardPayrollIdRouteImport.update({
   path: '/payroll/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardEmployeesResignRoute =
-  DashboardEmployeesResignRouteImport.update({
-    id: '/employees/resign',
-    path: '/employees/resign',
+const DashboardRecruitmentIndexRoute =
+  DashboardRecruitmentIndexRouteImport.update({
+    id: '/recruitment/',
+    path: '/recruitment/',
     getParentRoute: () => DashboardRoute,
   } as any)
-const DashboardEmployeesOnboardRoute =
-  DashboardEmployeesOnboardRouteImport.update({
-    id: '/employees/onboard',
-    path: '/employees/onboard',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardEmployeesIdRoute = DashboardEmployeesIdRouteImport.update({
-  id: '/employees/$id',
-  path: '/employees/$id',
+const DashboardRecruitmentIdRoute = DashboardRecruitmentIdRouteImport.update({
+  id: '/recruitment/$id',
+  path: '/recruitment/$id',
   getParentRoute: () => DashboardRoute,
-} as any)
-const AdminCompaniesRegisterRoute = AdminCompaniesRegisterRouteImport.update({
-  id: '/companies/register',
-  path: '/companies/register',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCompaniesIdRoute = AdminCompaniesIdRouteImport.update({
-  id: '/companies/$id',
-  path: '/companies/$id',
-  getParentRoute: () => AdminRoute,
 } as any)
 const DashboardRecruitmentApplicantIdRoute =
   DashboardRecruitmentApplicantIdRouteImport.update({
@@ -494,25 +494,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -522,151 +508,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRoute
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/reports': {
-      id: '/dashboard/reports'
-      path: '/reports'
-      fullPath: '/dashboard/reports'
-      preLoaderRoute: typeof DashboardReportsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/positions': {
-      id: '/dashboard/positions'
-      path: '/positions'
-      fullPath: '/dashboard/positions'
-      preLoaderRoute: typeof DashboardPositionsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/performance': {
-      id: '/dashboard/performance'
-      path: '/performance'
-      fullPath: '/dashboard/performance'
-      preLoaderRoute: typeof DashboardPerformanceRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/leaves': {
-      id: '/dashboard/leaves'
-      path: '/leaves'
-      fullPath: '/dashboard/leaves'
-      preLoaderRoute: typeof DashboardLeavesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/help': {
-      id: '/dashboard/help'
-      path: '/help'
-      fullPath: '/dashboard/help'
-      preLoaderRoute: typeof DashboardHelpRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/documents': {
-      id: '/dashboard/documents'
-      path: '/documents'
-      fullPath: '/dashboard/documents'
-      preLoaderRoute: typeof DashboardDocumentsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/departments': {
-      id: '/dashboard/departments'
-      path: '/departments'
-      fullPath: '/dashboard/departments'
-      preLoaderRoute: typeof DashboardDepartmentsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/calendar': {
-      id: '/dashboard/calendar'
-      path: '/calendar'
-      fullPath: '/dashboard/calendar'
-      preLoaderRoute: typeof DashboardCalendarRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/analytics': {
-      id: '/dashboard/analytics'
-      path: '/analytics'
-      fullPath: '/dashboard/analytics'
-      preLoaderRoute: typeof DashboardAnalyticsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/auth/verify': {
-      id: '/auth/verify'
-      path: '/verify'
-      fullPath: '/auth/verify'
-      preLoaderRoute: typeof AuthVerifyRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/reset-password': {
-      id: '/auth/reset-password'
-      path: '/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/forgot-password': {
-      id: '/auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/auth/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/change-password': {
-      id: '/auth/change-password'
-      path: '/change-password'
-      fullPath: '/auth/change-password'
-      preLoaderRoute: typeof AuthChangePasswordRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/apply/$jobId': {
-      id: '/apply/$jobId'
-      path: '/apply/$jobId'
-      fullPath: '/apply/$jobId'
-      preLoaderRoute: typeof ApplyJobIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/settings': {
-      id: '/admin/settings'
-      path: '/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/logs': {
-      id: '/admin/logs'
-      path: '/logs'
-      fullPath: '/admin/logs'
-      preLoaderRoute: typeof AdminLogsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/departments': {
@@ -676,25 +543,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDepartmentsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/dashboard/recruitment/': {
-      id: '/dashboard/recruitment/'
-      path: '/recruitment'
-      fullPath: '/dashboard/recruitment/'
-      preLoaderRoute: typeof DashboardRecruitmentIndexRouteImport
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/apply/$jobId': {
+      id: '/apply/$jobId'
+      path: '/apply/$jobId'
+      fullPath: '/apply/$jobId'
+      preLoaderRoute: typeof ApplyJobIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/change-password': {
+      id: '/auth/change-password'
+      path: '/change-password'
+      fullPath: '/auth/change-password'
+      preLoaderRoute: typeof AuthChangePasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/auth/verify': {
+      id: '/auth/verify'
+      path: '/verify'
+      fullPath: '/auth/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/payroll/': {
-      id: '/dashboard/payroll/'
-      path: '/payroll'
-      fullPath: '/dashboard/payroll/'
-      preLoaderRoute: typeof DashboardPayrollIndexRouteImport
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/employees/': {
-      id: '/dashboard/employees/'
-      path: '/employees'
-      fullPath: '/dashboard/employees/'
-      preLoaderRoute: typeof DashboardEmployeesIndexRouteImport
+    '/dashboard/calendar': {
+      id: '/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/departments': {
+      id: '/dashboard/departments'
+      path: '/departments'
+      fullPath: '/dashboard/departments'
+      preLoaderRoute: typeof DashboardDepartmentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/documents': {
+      id: '/dashboard/documents'
+      path: '/documents'
+      fullPath: '/dashboard/documents'
+      preLoaderRoute: typeof DashboardDocumentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/help': {
+      id: '/dashboard/help'
+      path: '/help'
+      fullPath: '/dashboard/help'
+      preLoaderRoute: typeof DashboardHelpRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/leaves': {
+      id: '/dashboard/leaves'
+      path: '/leaves'
+      fullPath: '/dashboard/leaves'
+      preLoaderRoute: typeof DashboardLeavesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/performance': {
+      id: '/dashboard/performance'
+      path: '/performance'
+      fullPath: '/dashboard/performance'
+      preLoaderRoute: typeof DashboardPerformanceRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/positions': {
+      id: '/dashboard/positions'
+      path: '/positions'
+      fullPath: '/dashboard/positions'
+      preLoaderRoute: typeof DashboardPositionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reports': {
+      id: '/dashboard/reports'
+      path: '/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/admin/companies/': {
@@ -704,32 +683,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCompaniesIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/dashboard/recruitment/$id': {
-      id: '/dashboard/recruitment/$id'
-      path: '/recruitment/$id'
-      fullPath: '/dashboard/recruitment/$id'
-      preLoaderRoute: typeof DashboardRecruitmentIdRouteImport
-      parentRoute: typeof DashboardRoute
+    '/admin/companies/$id': {
+      id: '/admin/companies/$id'
+      path: '/companies/$id'
+      fullPath: '/admin/companies/$id'
+      preLoaderRoute: typeof AdminCompaniesIdRouteImport
+      parentRoute: typeof AdminRoute
     }
-    '/dashboard/payroll/$id': {
-      id: '/dashboard/payroll/$id'
-      path: '/payroll/$id'
-      fullPath: '/dashboard/payroll/$id'
-      preLoaderRoute: typeof DashboardPayrollIdRouteImport
-      parentRoute: typeof DashboardRoute
+    '/admin/companies/register': {
+      id: '/admin/companies/register'
+      path: '/companies/register'
+      fullPath: '/admin/companies/register'
+      preLoaderRoute: typeof AdminCompaniesRegisterRouteImport
+      parentRoute: typeof AdminRoute
     }
-    '/dashboard/employees/resign': {
-      id: '/dashboard/employees/resign'
-      path: '/employees/resign'
-      fullPath: '/dashboard/employees/resign'
-      preLoaderRoute: typeof DashboardEmployeesResignRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/employees/onboard': {
-      id: '/dashboard/employees/onboard'
-      path: '/employees/onboard'
-      fullPath: '/dashboard/employees/onboard'
-      preLoaderRoute: typeof DashboardEmployeesOnboardRouteImport
+    '/dashboard/employees/': {
+      id: '/dashboard/employees/'
+      path: '/employees'
+      fullPath: '/dashboard/employees/'
+      preLoaderRoute: typeof DashboardEmployeesIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/employees/$id': {
@@ -739,19 +711,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardEmployeesIdRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/admin/companies/register': {
-      id: '/admin/companies/register'
-      path: '/companies/register'
-      fullPath: '/admin/companies/register'
-      preLoaderRoute: typeof AdminCompaniesRegisterRouteImport
-      parentRoute: typeof AdminRoute
+    '/dashboard/employees/onboard': {
+      id: '/dashboard/employees/onboard'
+      path: '/employees/onboard'
+      fullPath: '/dashboard/employees/onboard'
+      preLoaderRoute: typeof DashboardEmployeesOnboardRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/admin/companies/$id': {
-      id: '/admin/companies/$id'
-      path: '/companies/$id'
-      fullPath: '/admin/companies/$id'
-      preLoaderRoute: typeof AdminCompaniesIdRouteImport
-      parentRoute: typeof AdminRoute
+    '/dashboard/employees/resign': {
+      id: '/dashboard/employees/resign'
+      path: '/employees/resign'
+      fullPath: '/dashboard/employees/resign'
+      preLoaderRoute: typeof DashboardEmployeesResignRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/payroll/': {
+      id: '/dashboard/payroll/'
+      path: '/payroll'
+      fullPath: '/dashboard/payroll/'
+      preLoaderRoute: typeof DashboardPayrollIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/payroll/$id': {
+      id: '/dashboard/payroll/$id'
+      path: '/payroll/$id'
+      fullPath: '/dashboard/payroll/$id'
+      preLoaderRoute: typeof DashboardPayrollIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/recruitment/': {
+      id: '/dashboard/recruitment/'
+      path: '/recruitment'
+      fullPath: '/dashboard/recruitment/'
+      preLoaderRoute: typeof DashboardRecruitmentIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/recruitment/$id': {
+      id: '/dashboard/recruitment/$id'
+      path: '/recruitment/$id'
+      fullPath: '/dashboard/recruitment/$id'
+      preLoaderRoute: typeof DashboardRecruitmentIdRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/dashboard/recruitment/applicant/$id': {
       id: '/dashboard/recruitment/applicant/$id'
